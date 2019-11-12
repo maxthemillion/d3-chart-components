@@ -22,7 +22,7 @@ export default {
   extends: Chart,
   data: function() {
     return {
-      title: "Chart Test",
+      title: "How popular is Donald Trump",
       dataURL: "./data/approval_topline.csv"
     };
   },
@@ -41,8 +41,9 @@ export default {
 
 #contentWrapper {
   display:flex;
-  flex-direction: row;
-
+  flex-direction: column;
+  align-items: center;
+  justify-content:start;
 }
 
 #chartWrapper {
@@ -63,7 +64,8 @@ export default {
 
 #chartTitle {
   left: -12px;
-  color: white;
+  color: rgb(46, 46, 46);
   position: relative;
+  margin: 3em 0;
 }
 </style>

@@ -51,7 +51,7 @@ export default {
         .x(d => _this.scale.x(d[_this.binding.x]))
         .y(d => _this.scale.y(d[_this.binding.y]));
       
-      const rPath = rc.path(valueline(this.data))    
+      const rPath = rc.path(valueline(this.data), {simplification: 0.1})    
       this.select.svg.node().appendChild(rPath)
 
       this.select.xAxis.call(
