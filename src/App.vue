@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-
+    <Chart />
   </div>
 </template>
 

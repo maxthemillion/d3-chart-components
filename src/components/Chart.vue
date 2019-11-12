@@ -1,12 +1,12 @@
 <template>
-  <div>
+  <div id="contentWrapper">
     <div id="chartTitle" ref="chartTitle">{{ this.title }}</div>
 
     <div id="chartWrapper" ref="chartWrapper">
       <svg id="chartSVG" ref="chartSVG">
         <g ref="chartGroup">
-          <g ref="plotArea" />
-          <g ref="xAxis" class="xaxis axis" />
+          <g ref="plotArea" transform="translate(0,0)" />
+          <g ref="xAxis" class="xaxis axis" transform="translate(0, 100)"/>
           <g ref="yAxis" clas="yaxis axis" />
         </g>
       </svg>
@@ -23,21 +23,31 @@ export default {
   data: function() {
     return {
       title: "Chart Test",
-      dataURL: "./data/impeachment-polls.csv"
+      dataURL: "./data/approval_topline.csv"
     };
   },
   methods: {
-    fetchData: async function() {
-      const _this = this;
-      this.data = await d3.csv(dataURL, d3.autoType)
-    },
+
   }
 };
 </script>
 
-<style scoped>
+<style>
+
+.chartLine{
+  fill: none;
+  stroke: black;
+}
+
+#contentWrapper {
+  display:flex;
+  flex-direction: row;
+
+}
+
 #chartWrapper {
-  height: 100px;
+  height: 300px;
+  width:500px;
   margin-bottom: 40px;
   display: flex;
   align-items: flex-end;
@@ -45,10 +55,9 @@ export default {
 }
 
 #chartSVG {
-  display: block;
-  width: 100%;
-  height: 70%;
   margin: 0 auto;
+  height:100%;
+  width:100%;
   overflow: visible;
 }
 
