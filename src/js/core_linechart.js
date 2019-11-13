@@ -10,7 +10,7 @@ export default {
       select: {},
       domain: { x: {}, y: {} },
       scale: {},
-      data: {},
+      data: {}
     };
   },
   watch: {},
@@ -43,26 +43,78 @@ export default {
     },
     draw: function() {
       const _this = this;
-      const rc = rough.svg(this.select.svg.node());
-      const valueline = d3
+
+      const color = d3.scaleOrdinal(this.colorScheme);
+
+      // in case plot should be styled using rough.js, invoke rough.js generator
+      if (this.useRough) {
+        const valueline = d3
         .line()
         .x(d => _this.scale.x(d[_this.binding.x]))
         .y(d => _this.scale.y(d[_this.binding.y]));
 
-      let nestedData = d3
-        .nest()
-        .key(function(d) {
-          return d[_this.binding.color];
-        })
-        .map(this.data);
-      
-      let color = d3.scaleOrdinal(this.colorScheme);
+        const nestedData = d3
+          .nest()
+          .key(function(d) {
+            return d[_this.binding.color];
+          })
+          .map(this.data);
 
-      nestedData.keys().forEach(function(item){ 
-        let rPath = rc.path(valueline(nestedData['$'+item]), { simplification: 0.03, stroke: color(item)});
-        _this.select.svg.node().appendChild(rPath)
-      })
-  
+        const rc = rough.svg(this.select.svg.node());
+        nestedData.keys().forEach(function(item) {
+          let rPath = rc.path(valueline(nestedData["$" + item]), {
+            simplification: 0.03,
+            stroke: color(item)
+          });
+          _this.select.svg.node().appendChild(rPath);
+        });
+      } else {
+        const valueline = d3
+        .line()
+        .x(d => _this.scale.x(d.date))
+        .y(d => _this.scale.y(d.value));
+
+        const nestedData = d3
+          .nest()
+          .key(function(d) {
+            return d[_this.binding.color];
+          })
+          .key(function(d) {
+            return d[_this.binding.x];
+          })
+          .rollup(function(l) {
+            return l
+              .map(function(d) {
+                return d[_this.binding.y];
+              })
+              .reduce((a, b) => a + b, 0);
+          })
+          .entries(this.data);
+
+        let outer = [];
+        nestedData.forEach(function(a) {
+          let inner = []
+          a.values.forEach(function(b) {
+            inner.push({ key: a.key, date: moment(parseInt(b.key)), value: b.value });
+          });
+          outer.push(inner)
+        });
+
+        let g = this.select.plotArea
+          .append("g")
+          .selectAll("g")
+          .data(outer)
+          .join("g");
+
+        g.append("path")
+          .attr("fill", "none")
+          .attr("stroke", d => color(
+            d[0].key
+            ))
+          .attr("stroke-width", 1.5)
+          .attr("d", valueline);
+      }
+
       this.select.xAxis.call(
         d3
           .axisBottom(this.scale.x)

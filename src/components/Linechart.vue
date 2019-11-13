@@ -31,6 +31,10 @@ export default {
     colorScheme: {
       type: d3.colorScheme,
       default: function(){return d3.schemeBlues}
+    },
+    useRough: {
+      type: Boolean,
+      default: false
     }
   },
   data: function() {
