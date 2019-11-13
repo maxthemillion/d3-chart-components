@@ -1,22 +1,25 @@
 <template>
-  <div id="contentWrapper">
-    <div id="chartTitle" ref="chartTitle">{{ this.chartTitle }}</div>
-
-    <div id="chartWrapper" ref="chartWrapper">
-      <svg id="chartSVG" ref="chartSVG">
-        <g ref="chartGroup">
-          <g ref="plotArea" transform="translate(0,0)" />
-          <g ref="xAxis" class="xaxis axis" transform="translate(0, 300)" />
-          <g ref="yAxis" clas="yaxis axis" />
-        </g>
-      </svg>
+  <div id="pageWrapper">
+    <div id="contentWrapper">
+      <div id="chartTitle" ref="chartTitle">{{ this.chartTitle }}</div>
+      <div id="chartWrapper" ref="chartWrapper">
+        <div class="xAxisTitle">{{this.xAxisTitle}}</div>
+        <div class="yAxisTitle">{{this.yAxisTitle}}</div>
+        <svg id="chartSVG" ref="chartSVG">
+          <g ref="chartGroup">
+            <g ref="plotArea" transform="translate(0,0)" />
+            <g ref="xAxis" class="xaxis axis" transform="translate(0, 300)" />
+            <g ref="yAxis" class="yaxis axis" />
+          </g>
+        </svg>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
 import LinechartCore from "../js/core_linechart.js";
-import * as d3 from "d3"
+import * as d3 from "d3";
 
 export default {
   name: "Linechart",
@@ -30,7 +33,9 @@ export default {
     binding: Object,
     colorScheme: {
       type: d3.colorScheme,
-      default: function(){return d3.schemeBlues}
+      default: function() {
+        return d3.schemeBlues;
+      }
     },
     useRough: {
       type: Boolean,
@@ -39,16 +44,39 @@ export default {
   },
   data: function() {
     return {
+      xAxisTitle: "xAxis",
+      yAxisTitle: "yAxis"
     };
   },
   methods: {}
 };
 </script>
 
+
 <style>
+
+.xAxisTitle {
+  position: absolute;
+  bottom: -50px;
+  left: 45%;
+}
+
+.yAxisTitle {
+  position: absolute;
+  top: 128px;
+  left: -50px;
+  transform: rotate(-90deg);
+}
+
 .chartLine {
   fill: none;
   stroke: black;
+}
+
+#pageWrapper{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 #contentWrapper {
@@ -56,28 +84,26 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: start;
+  width:500px;
 }
 
 #chartWrapper {
   height: 300px;
-  width: 500px;
-  margin-bottom: 40px;
-  display: flex;
-  align-items: flex-end;
+  width:100%;
   position: relative;
 }
 
 #chartSVG {
-  margin: 0 auto;
   height: 100%;
   width: 100%;
   overflow: visible;
 }
 
 #chartTitle {
-  left: -12px;
+  font-size:2em;
   color: rgb(46, 46, 46);
-  position: relative;
-  margin: 3em 0;
+  margin: 2em 0;
+  text-align: left;
+  width: 100%
 }
 </style>

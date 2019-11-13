@@ -71,6 +71,7 @@ export default {
       } else {
         const valueline = d3
         .line()
+        .curve(d3.curveBasis)
         .x(d => _this.scale.x(d.date))
         .y(d => _this.scale.y(d.value));
 
