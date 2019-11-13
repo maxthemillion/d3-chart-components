@@ -18,7 +18,7 @@
 import Chart from "../js/chart.js";
 
 export default {
-  name: "TrumpChart",
+  name: "Linechart",
   extends: Chart,
   data: function() {
     return {
