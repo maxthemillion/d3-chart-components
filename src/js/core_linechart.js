@@ -3,7 +3,7 @@ import * as moment from "moment";
 import rough from "roughjs/dist/rough.umd";
 
 export default {
-  name: "Chart",
+  name: "LinechartCore",
   props: {},
   data() {
     return {
@@ -52,13 +52,13 @@ export default {
       let nestedData = d3
         .nest()
         .key(function(d) {
-          return d.subgroup;
+          return d[_this.binding.color];
         })
         .map(this.data);
       
-      let color = d3.scaleOrdinal(d3.schemeBlues[3]);
-      nestedData.keys().forEach(function(item){
+      let color = d3.scaleOrdinal(this.colorScheme);
 
+      nestedData.keys().forEach(function(item){ 
         let rPath = rc.path(valueline(nestedData['$'+item]), { simplification: 0.03, stroke: color(item)});
         _this.select.svg.node().appendChild(rPath)
       })

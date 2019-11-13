@@ -1,12 +1,12 @@
 <template>
   <div id="contentWrapper">
-    <div id="chartTitle" ref="chartTitle">{{ this.title }}</div>
+    <div id="chartTitle" ref="chartTitle">{{ this.chartTitle }}</div>
 
     <div id="chartWrapper" ref="chartWrapper">
       <svg id="chartSVG" ref="chartSVG">
         <g ref="chartGroup">
           <g ref="plotArea" transform="translate(0,0)" />
-          <g ref="xAxis" class="xaxis axis" transform="translate(0, 300)"/>
+          <g ref="xAxis" class="xaxis axis" transform="translate(0, 300)" />
           <g ref="yAxis" clas="yaxis axis" />
         </g>
       </svg>
@@ -15,41 +15,48 @@
 </template>
 
 <script>
-import Chart from "../js/chart.js";
+import LinechartCore from "../js/core_linechart.js";
+import * as d3 from "d3"
 
 export default {
   name: "Linechart",
-  extends: Chart,
+  extends: LinechartCore,
+  props: {
+    chartTitle: {
+      type: String,
+      default: "Chart Title"
+    },
+    dataURL: String,
+    binding: Object,
+    colorScheme: {
+      type: d3.colorScheme,
+      default: function(){return d3.schemeBlues}
+    }
+  },
   data: function() {
     return {
-      title: "How popular is Donald Trump",
-      dataURL: "./data/approval_topline.csv",
-      binding: { x: "modeldate", y: "disapprove_estimate" } // needs to map x and y to column names in the data
     };
   },
-  methods: {
-
-  }
+  methods: {}
 };
 </script>
 
 <style>
-
-.chartLine{
+.chartLine {
   fill: none;
   stroke: black;
 }
 
 #contentWrapper {
-  display:flex;
+  display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content:start;
+  justify-content: start;
 }
 
 #chartWrapper {
   height: 300px;
-  width:500px;
+  width: 500px;
   margin-bottom: 40px;
   display: flex;
   align-items: flex-end;
@@ -58,8 +65,8 @@ export default {
 
 #chartSVG {
   margin: 0 auto;
-  height:100%;
-  width:100%;
+  height: 100%;
+  width: 100%;
   overflow: visible;
 }
 
