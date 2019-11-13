@@ -5,14 +5,12 @@ import rough from "roughjs/dist/rough.umd";
 export default {
   name: "Chart",
   props: {},
-
   data() {
     return {
       select: {},
       domain: { x: {}, y: {} },
       scale: {},
       data: {},
-      binding: { x: "modeldate", y: "disapprove_estimate" } // needs to map x and y to column names in the data
     };
   },
   watch: {},
@@ -50,10 +48,21 @@ export default {
         .line()
         .x(d => _this.scale.x(d[_this.binding.x]))
         .y(d => _this.scale.y(d[_this.binding.y]));
-      
-      const rPath = rc.path(valueline(this.data), {simplification: 0.1})    
-      this.select.svg.node().appendChild(rPath)
 
+      let nestedData = d3
+        .nest()
+        .key(function(d) {
+          return d.subgroup;
+        })
+        .map(this.data);
+      
+      let color = d3.scaleOrdinal(d3.schemeBlues[3]);
+      nestedData.keys().forEach(function(item){
+
+        let rPath = rc.path(valueline(nestedData['$'+item]), { simplification: 0.03, stroke: color(item)});
+        _this.select.svg.node().appendChild(rPath)
+      })
+  
       this.select.xAxis.call(
         d3
           .axisBottom(this.scale.x)

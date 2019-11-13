@@ -6,7 +6,7 @@
       <svg id="chartSVG" ref="chartSVG">
         <g ref="chartGroup">
           <g ref="plotArea" transform="translate(0,0)" />
-          <g ref="xAxis" class="xaxis axis" transform="translate(0, 100)"/>
+          <g ref="xAxis" class="xaxis axis" transform="translate(0, 300)"/>
           <g ref="yAxis" clas="yaxis axis" />
         </g>
       </svg>
@@ -23,7 +23,8 @@ export default {
   data: function() {
     return {
       title: "How popular is Donald Trump",
-      dataURL: "./data/approval_topline.csv"
+      dataURL: "./data/approval_topline.csv",
+      binding: { x: "modeldate", y: "disapprove_estimate" } // needs to map x and y to column names in the data
     };
   },
   methods: {
