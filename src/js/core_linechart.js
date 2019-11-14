@@ -77,9 +77,14 @@ export default {
 
       g.append("path")
         .attr("fill", "none")
+        .attr('class', 'line')
         .attr("stroke", d => color(d[0].color))
         .attr("stroke-width", 1.5)
-        .attr("d", valueline);
+        .attr("d", valueline)
+        .on('mouseover', function(d){
+          _this.emphasize(d, this);
+        })
+        .on('mouseout', function(){_this.equalize()})
     },
     drawAxes: function(){
       this.select.xAxis.call(
@@ -106,6 +111,22 @@ export default {
       });
       return data;
     },
+    // eslint-disable-next-line no-unused-vars
+    emphasize: function(_d, hoverNode) {
+        d3.selectAll(".line").classed("passive", true);
+        d3.select(hoverNode).classed("passive", false)
+        d3.selectAll(".passive")
+          .transition()
+          .duration(500)
+          .style("opacity", 0.1);
+    },
+    equalize: function(){
+      d3.selectAll(".line")
+        .classed("passive", false)
+        .transition()
+        .duration(500)
+        .style("opacity", 1);
+    }
   },
 
   mounted() {
