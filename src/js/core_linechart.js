@@ -9,7 +9,8 @@ export default {
       select: {},
       domain: { x: {}, y: {} },
       scale: {},
-      data: {}
+      rawData: {},
+      vizData: {},
     };
   },
   watch: {},
@@ -23,12 +24,28 @@ export default {
       this.select.plotLegend = d3.select(this.$refs.plotLegend);
     },
     setDomain: function() {
-      const _this = this;
-      this.domain.x.max = d3.max(this.data, d => d[_this.binding.x]);
-      this.domain.x.min = d3.min(this.data, d => d[_this.binding.x]);
 
-      this.domain.y.max = d3.max(this.data, d => d[_this.binding.y]);
-      this.domain.y.min = d3.min(this.data, d => d[_this.binding.y]);
+      const _this = this;
+
+      if(this.xDomain !== null){
+        this.domain.y.max = d3.max(this.xDomain)
+        this.domain.y.min = d3.min(this.xDomain)
+      } else {
+        this.domain.x.max = d3.max(this.rawData, d => d[_this.binding.x]);
+        this.domain.x.min = d3.min(this.rawData, d => d[_this.binding.x]);
+      }   
+
+      if(this.yDomain !== null){
+        this.domain.y.max = d3.max(this.yDomain)
+        this.domain.y.min = d3.min(this.yDomain)
+      }
+      else if(this.yIncludeZero){
+        this.domain.y.max = d3.max(this.rawData, d => Math.max(0, d[_this.binding.y]));
+        this.domain.y.min = d3.min(this.rawData, d => Math.min(0, d[_this.binding.y]));
+      } else {
+        this.domain.y.max = d3.max(this.rawData, d => d[_this.binding.y]);
+        this.domain.y.min = d3.min(this.rawData, d => d[_this.binding.y]);
+      }      
     },
     setScales: function() {
       this.scale.x = d3
@@ -41,7 +58,7 @@ export default {
         .range([this.select.svg.node().getBoundingClientRect().height, 0])
         .domain([this.domain.y.min, this.domain.y.max]);
     },
-    draw: function() {
+    drawPlot: function() {
       const _this = this;
 
       const color = d3.scaleOrdinal(this.colorScheme);
@@ -49,51 +66,22 @@ export default {
       const valueline = d3
         .line()
         .curve(d3.curveBasis)
-        .x(d => _this.scale.x(d.date))
-        .y(d => _this.scale.y(d.value));
-
-      const nestedData = d3
-        .nest()
-        .key(function(d) {
-          return d[_this.binding.color];
-        })
-        .key(function(d) {
-          return d[_this.binding.x];
-        })
-        .rollup(function(l) {
-          return l
-            .map(function(d) {
-              return d[_this.binding.y];
-            })
-            .reduce((a, b) => a + b, 0);
-        })
-        .entries(this.data);
-
-      let outer = [];
-      nestedData.forEach(function(a) {
-        let inner = [];
-        a.values.forEach(function(b) {
-          inner.push({
-            key: a.key,
-            date: moment(parseInt(b.key)),
-            value: b.value
-          });
-        });
-        outer.push(inner);
-      });
+        .x(d => _this.scale.x(d.x))
+        .y(d => _this.scale.y(d.y));
 
       let g = this.select.plotArea
         .append("g")
         .selectAll("g")
-        .data(outer)
+        .data(this.vizData)
         .join("g");
 
       g.append("path")
         .attr("fill", "none")
-        .attr("stroke", d => color(d[0].key))
+        .attr("stroke", d => color(d[0].color))
         .attr("stroke-width", 1.5)
         .attr("d", valueline);
-
+    },
+    drawAxes: function(){
       this.select.xAxis.call(
         d3
           .axisBottom(this.scale.x)
@@ -104,10 +92,6 @@ export default {
       this.select.yAxis.call(
         d3
           .axisLeft(this.scale.y)
-          .tickValues([
-            d3.min(this.data, d => d[this.binding.y]),
-            d3.max(this.data, d => d[this.binding.y])
-          ])
       );
     },
     setUp: function() {
@@ -121,15 +105,17 @@ export default {
         d[_this.binding.x] = moment(d[_this.binding.x], "MM/DD/YYYY");
       });
       return data;
-    }
+    },
   },
 
   mounted() {
     const _this = this;
     d3.csv(this.dataURL, d3.autoType).then(function(data) {
-      _this.data = _this.parseDateStrings(data);
+      _this.rawData = _this.parseDateStrings(data);
+      _this.vizData = _this.transformData(_this.rawData)
       _this.setUp();
-      _this.draw();
+      _this.drawPlot();
+      _this.drawAxes();
     });
   }
 };

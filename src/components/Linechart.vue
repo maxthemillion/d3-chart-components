@@ -4,8 +4,8 @@
       <div id="chartTitle" ref="chartTitle" v-if="chartTitle !== null">{{ this.chartTitle }}</div>
       <div id="chartSubTitle" v-if="chartSubTitle !== null">{{this.chartSubTitle}}</div>
       <div id="chartWrapper" ref="chartWrapper">
-        <div class="xAxisTitle" v-if="xAxisTitle !== null">{{this.xAxisTitle}}</div>
-        <div class="yAxisTitle" v-if="yAxisTitle !== null">{{this.yAxisTitle}}</div>
+        <div class="xAxisTitle axisTitle" v-if="xAxisTitle !== null">{{this.xAxisTitle}}</div>
+        <div class="yAxisTitle axisTitle" v-if="yAxisTitle !== null">{{this.yAxisTitle}}</div>
         <svg id="chartSVG" ref="chartSVG">
           <g ref="chartGroup">
             <g ref="plotArea" transform="translate(0,0)" />
@@ -21,6 +21,7 @@
 
 <script>
 import LinechartCore from "../js/core_linechart.js";
+import * as moment from "moment";
 import * as d3 from "d3";
 
 export default {
@@ -37,6 +38,22 @@ export default {
     },
     xAxisTitle: { type: String, default: "xAxis" },
     yAxisTitle: { type: String, default: "yAxis" },
+    xDomain: {
+      type: Array,
+      default: function() {
+        return null; //TODO: it doesn't work to set the xDomain yet. Seems to be some problem with scales
+      }
+    },
+    yIncludeZero: {
+      type: Boolean,
+      default: true
+    },
+    yDomain: {
+      type: Array,
+      default: function() {
+        return null;
+      }
+    },
     dataURL: String,
     binding: Object,
     colorScheme: {
@@ -49,12 +66,59 @@ export default {
   data: function() {
     return {};
   },
-  methods: {}
+  methods: {
+    nestData: function(data) {
+      const _this = this;
+      const res = d3
+        .nest()
+        .key(function(d) {
+          return d[_this.binding.color];
+        })
+        .key(function(d) {
+          return d[_this.binding.x];
+        })
+        .rollup(function(l) {
+          return l
+            .map(function(d) {
+              return d[_this.binding.y];
+            })
+            .reduce((a, b) => a + b, 0);
+        })
+        .entries(data);
+
+      return res;
+    },
+    flattenData: function(data) {
+      let outer = [];
+      data.forEach(function(a) {
+        let inner = [];
+        a.values.forEach(function(b) {
+          inner.push({
+            color: a.key,
+            x: moment(parseInt(b.key)),
+            y: b.value
+          });
+        });
+        outer.push(inner);
+      });
+
+      return outer;
+    },
+    transformData: function(data) {
+      const nestedData = this.nestData(data);
+      const vizData = this.flattenData(nestedData);
+      return vizData;
+    }
+  }
 };
 </script>
 
 
 <style>
+.axisTitle {
+  font-size: small;
+}
+
 .xAxisTitle {
   position: absolute;
   bottom: -50px;
@@ -64,7 +128,7 @@ export default {
 .yAxisTitle {
   position: absolute;
   bottom: 10%;
-  left: -50px;
+  left: -40px;
   transform: rotate(-90deg);
   transform-origin: top left;
 }
