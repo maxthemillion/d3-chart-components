@@ -18,7 +18,10 @@ export default {
       opts:{
         dataURL: "./data/approval_topline.csv",
         chartTitle: "How unpopular is Donald Trump?",
+        chartSubTitle: "Disapproval ratings throughout his presidency.",
         binding:  { x: "modeldate", y: "disapprove_estimate", color: "subgroup"},
+        xAxisTitle: null,
+        yAxisTitle: "Disapproval ratings (pct.)",
         colorScheme: d3.schemeTableau10
       }
     } 

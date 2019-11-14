@@ -21,6 +21,7 @@ export default {
       this.select.xAxis = d3.select(this.$refs.xAxis);
       this.select.yAxis = d3.select(this.$refs.yAxis);
       this.select.plotArea = d3.select(this.$refs.plotArea);
+      this.select.plotLegend = d3.select(this.$refs.plotLegend);
     },
     setDomain: function() {
       const _this = this;
@@ -49,9 +50,9 @@ export default {
       // in case plot should be styled using rough.js, invoke rough.js generator
       if (this.useRough) {
         const valueline = d3
-        .line()
-        .x(d => _this.scale.x(d[_this.binding.x]))
-        .y(d => _this.scale.y(d[_this.binding.y]));
+          .line()
+          .x(d => _this.scale.x(d[_this.binding.x]))
+          .y(d => _this.scale.y(d[_this.binding.y]));
 
         const nestedData = d3
           .nest()
@@ -70,10 +71,10 @@ export default {
         });
       } else {
         const valueline = d3
-        .line()
-        .curve(d3.curveBasis)
-        .x(d => _this.scale.x(d.date))
-        .y(d => _this.scale.y(d.value));
+          .line()
+          .curve(d3.curveBasis)
+          .x(d => _this.scale.x(d.date))
+          .y(d => _this.scale.y(d.value));
 
         const nestedData = d3
           .nest()
@@ -94,11 +95,15 @@ export default {
 
         let outer = [];
         nestedData.forEach(function(a) {
-          let inner = []
+          let inner = [];
           a.values.forEach(function(b) {
-            inner.push({ key: a.key, date: moment(parseInt(b.key)), value: b.value });
+            inner.push({
+              key: a.key,
+              date: moment(parseInt(b.key)),
+              value: b.value
+            });
           });
-          outer.push(inner)
+          outer.push(inner);
         });
 
         let g = this.select.plotArea
@@ -109,11 +114,10 @@ export default {
 
         g.append("path")
           .attr("fill", "none")
-          .attr("stroke", d => color(
-            d[0].key
-            ))
+          .attr("stroke", d => color(d[0].key))
           .attr("stroke-width", 1.5)
           .attr("d", valueline);
+
       }
 
       this.select.xAxis.call(
