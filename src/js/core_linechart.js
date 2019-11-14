@@ -3,7 +3,40 @@ import * as moment from "moment";
 
 export default {
   name: "LinechartCore",
-  props: {},
+  props: {    chartTitle: {
+    type: String,
+    default: "Chart Title"
+  },
+  chartSubTitle: {
+    type: String,
+    default: "subtitle"
+  },
+  xAxisTitle: { type: String, default: "xAxis" },
+  yAxisTitle: { type: String, default: "yAxis" },
+  xDomain: {
+    type: Array,
+    default: function() {
+      return null; //TODO: it doesn't work to set the xDomain yet. Seems to be some problem with scales
+    }
+  },
+  yIncludeZero: {
+    type: Boolean,
+    default: true
+  },
+  yDomain: {
+    type: Array,
+    default: function() {
+      return null;
+    }
+  },
+  dataURL: String,
+  binding: Object,
+  colorScheme: {
+    type: d3.colorScheme,
+    default: function() {
+      return d3.schemeBlues;
+    }
+  }},
   data() {
     return {
       select: {},
