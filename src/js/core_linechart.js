@@ -3,47 +3,51 @@ import * as moment from "moment";
 
 export default {
   name: "LinechartCore",
-  props: {    chartTitle: {
-    type: String,
-    default: "Chart Title"
-  },
-  chartSubTitle: {
-    type: String,
-    default: "subtitle"
-  },
-  xAxisTitle: { type: String, default: "xAxis" },
-  yAxisTitle: { type: String, default: "yAxis" },
-  xDomain: {
-    type: Array,
-    default: function() {
-      return null; //TODO: it doesn't work to set the xDomain yet. Seems to be some problem with scales
+  props: {
+    chartTitle: {
+      type: String,
+      default: "Chart Title"
+    },
+    chartSubTitle: {
+      type: String,
+      default: "subtitle"
+    },
+    xAxisTitle: { type: String, default: "xAxis" },
+    yAxisTitle: { type: String, default: "yAxis" },
+    xDomain: {
+      type: Array,
+      default: function() {
+        return null; //TODO: it doesn't work to set the xDomain yet. Seems to be some problem with scales
+      }
+    },
+    yIncludeZero: {
+      type: Boolean,
+      default: true
+    },
+    yDomain: {
+      type: Array,
+      default: function() {
+        return null;
+      }
+    },
+    dataURL: String,
+    binding: Object,
+    colorScheme: {
+      type: d3.colorScheme,
+      default: function() {
+        return d3.schemeBlues;
+      }
     }
   },
-  yIncludeZero: {
-    type: Boolean,
-    default: true
-  },
-  yDomain: {
-    type: Array,
-    default: function() {
-      return null;
-    }
-  },
-  dataURL: String,
-  binding: Object,
-  colorScheme: {
-    type: d3.colorScheme,
-    default: function() {
-      return d3.schemeBlues;
-    }
-  }},
   data() {
     return {
+      axis: {},
       select: {},
       domain: { x: {}, y: {} },
       scale: {},
       rawData: {},
       vizData: {},
+      zoom: {}
     };
   },
   watch: {},
@@ -57,28 +61,30 @@ export default {
       this.select.plotLegend = d3.select(this.$refs.plotLegend);
     },
     setDomain: function() {
-
       const _this = this;
 
-      if(this.xDomain !== null){
-        this.domain.y.max = d3.max(this.xDomain)
-        this.domain.y.min = d3.min(this.xDomain)
+      if (this.xDomain !== null) {
+        this.domain.y.max = d3.max(this.xDomain);
+        this.domain.y.min = d3.min(this.xDomain);
       } else {
         this.domain.x.max = d3.max(this.rawData, d => d[_this.binding.x]);
         this.domain.x.min = d3.min(this.rawData, d => d[_this.binding.x]);
-      }   
-
-      if(this.yDomain !== null){
-        this.domain.y.max = d3.max(this.yDomain)
-        this.domain.y.min = d3.min(this.yDomain)
       }
-      else if(this.yIncludeZero){
-        this.domain.y.max = d3.max(this.rawData, d => Math.max(0, d[_this.binding.y]));
-        this.domain.y.min = d3.min(this.rawData, d => Math.min(0, d[_this.binding.y]));
+
+      if (this.yDomain !== null) {
+        this.domain.y.max = d3.max(this.yDomain);
+        this.domain.y.min = d3.min(this.yDomain);
+      } else if (this.yIncludeZero) {
+        this.domain.y.max = d3.max(this.rawData, d =>
+          Math.max(0, d[_this.binding.y])
+        );
+        this.domain.y.min = d3.min(this.rawData, d =>
+          Math.min(0, d[_this.binding.y])
+        );
       } else {
         this.domain.y.max = d3.max(this.rawData, d => d[_this.binding.y]);
         this.domain.y.min = d3.min(this.rawData, d => d[_this.binding.y]);
-      }      
+      }
     },
     setScales: function() {
       this.scale.x = d3
@@ -90,6 +96,21 @@ export default {
         .scaleLinear()
         .range([this.select.svg.node().getBoundingClientRect().height, 0])
         .domain([this.domain.y.min, this.domain.y.max]);
+    },
+    setZoom() {
+      this.zoom = d3
+        .zoom()
+        .scaleExtent([1 / 2, 4])
+        .on("zoom", zoomed);
+      this.select.svg.call(this.zoom);
+
+      const _this = this;
+
+      function zoomed() {
+        _this.select.plotArea.attr("transform", d3.event.transform);
+        _this.select.xAxis.call(_this.axis.x.scale(d3.event.transform.rescaleX(_this.scale.x)));
+        _this.select.yAxis.call(_this.axis.y.scale(d3.event.transform.rescaleY(_this.scale.y)));
+      }
     },
     drawPlot: function() {
       const _this = this;
@@ -110,27 +131,27 @@ export default {
 
       g.append("path")
         .attr("fill", "none")
-        .attr('class', 'line')
+        .attr("class", "line")
         .attr("stroke", d => color(d[0].color))
         .attr("stroke-width", 1.5)
         .attr("d", valueline)
-        .on('mouseover', function(d){
+        .on("mouseover", function(d) {
           _this.emphasize(d, this);
         })
-        .on('mouseout', function(){_this.equalize()})
+        .on("mouseout", function() {
+          _this.equalize();
+        });
     },
-    drawAxes: function(){
-      this.select.xAxis.call(
-        d3
-          .axisBottom(this.scale.x)
-          .ticks(d3.timeMonth.every(6))
-          .tickFormat(d3.timeFormat("%d %B %y"))
-      );
+    drawAxes: function() {
+      this.axis.x = d3
+        .axisBottom(this.scale.x)
+        .ticks(d3.timeMonth.every(6))
+        .tickFormat(d3.timeFormat("%d %B %y"));
 
-      this.select.yAxis.call(
-        d3
-          .axisLeft(this.scale.y)
-      );
+      this.axis.y = d3.axisLeft(this.scale.y)
+
+      this.select.xAxis.call(this.axis.x);
+      this.select.yAxis.call(this.axis.y);
     },
     setUp: function() {
       this.setReferences();
@@ -146,14 +167,14 @@ export default {
     },
     // eslint-disable-next-line no-unused-vars
     emphasize: function(_d, hoverNode) {
-        d3.selectAll(".line").classed("passive", true);
-        d3.select(hoverNode).classed("passive", false)
-        d3.selectAll(".passive")
-          .transition()
-          .duration(500)
-          .style("opacity", 0.1);
+      d3.selectAll(".line").classed("passive", true);
+      d3.select(hoverNode).classed("passive", false);
+      d3.selectAll(".passive")
+        .transition()
+        .duration(500)
+        .style("opacity", 0.1);
     },
-    equalize: function(){
+    equalize: function() {
       d3.selectAll(".line")
         .classed("passive", false)
         .transition()
@@ -166,10 +187,11 @@ export default {
     const _this = this;
     d3.csv(this.dataURL, d3.autoType).then(function(data) {
       _this.rawData = _this.parseDateStrings(data);
-      _this.vizData = _this.transformData(_this.rawData)
+      _this.vizData = _this.transformData(_this.rawData);
       _this.setUp();
       _this.drawPlot();
       _this.drawAxes();
+      _this.setZoom();
     });
   }
 };
