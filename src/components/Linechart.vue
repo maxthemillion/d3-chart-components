@@ -44,10 +44,6 @@ export default {
       default: function() {
         return d3.schemeBlues;
       }
-    },
-    useRough: {
-      type: Boolean,
-      default: false
     }
   },
   data: function() {
