@@ -7,7 +7,7 @@
         <div class="xAxisTitle axisTitle" v-if="xAxisTitle !== null">{{this.xAxisTitle}}</div>
         <div class="yAxisTitle axisTitle" v-if="yAxisTitle !== null">{{this.yAxisTitle}}</div>
         <svg id="yAxisViewport">
-          <g ref="yAxis" class="yaxis axis" />
+          <g ref="yAxis" class="yaxis axis" transform="translate(50, 0)"/>
         </svg>
         <svg id="chartSVG" ref="chartSVG">
           <g ref="chartGroup">
@@ -161,8 +161,9 @@ export default {
 }
 #yAxisViewport {
   overflow: visible;
-  width: 1px;
+  width: 50px;
   height: 100%;
   position: absolute;
+  left: -50px;
 }
 </style>
