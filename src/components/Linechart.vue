@@ -6,14 +6,18 @@
       <div id="chartWrapper" ref="chartWrapper">
         <div class="xAxisTitle axisTitle" v-if="xAxisTitle !== null">{{this.xAxisTitle}}</div>
         <div class="yAxisTitle axisTitle" v-if="yAxisTitle !== null">{{this.yAxisTitle}}</div>
+        <svg id="yAxisViewport">
+          <g ref="yAxis" class="yaxis axis" />
+        </svg>
         <svg id="chartSVG" ref="chartSVG">
           <g ref="chartGroup">
             <g ref="plotArea" transform="translate(0,0)" />
             <g ref="plotLegend" />
-            <g ref="xAxis" class="xaxis axis" transform="translate(0, 300)" />
-            <g ref="yAxis" class="yaxis axis" />
           </g>
         </svg>
+        <svg id="xAxisViewport">
+          <g ref="xAxis" class="xaxis axis" />
+        </svg>  
       </div>
     </div>
   </div>
@@ -27,7 +31,7 @@ import * as d3 from "d3";
 export default {
   name: "Linechart",
   extends: LinechartCore,
-  props: { },
+  props: {},
   data: function() {
     return {};
   },
@@ -70,10 +74,10 @@ export default {
       return outer;
     },
     transformData: function(data) {
-      /** 
-      *   transformData needs to be changed according to the structure of the data. 
-      *   output data format is [{color: 'xx', x: 'xx',y: 'xx'},...]
-      **/
+      /**
+       *   transformData needs to be changed according to the structure of the data.
+       *   output data format is [{color: 'xx', x: 'xx',y: 'xx'},...]
+       **/
       const nestedData = this.nestData(data);
       const vizData = this.flattenData(nestedData);
       return vizData;
@@ -130,7 +134,7 @@ export default {
 #chartSVG {
   height: 100%;
   width: 100%;
-  overflow: visible;
+  overflow: hidden;
 }
 
 #chartTitle {
@@ -145,5 +149,20 @@ export default {
   text-align: left;
   margin-bottom: 1em;
   width: 100%;
+}
+
+#xAxisViewport {
+  width: 100%;
+  overflow: visible;
+  position: absolute;
+  height:50px;
+  bottom: -50px;
+  left: 0;
+}
+#yAxisViewport {
+  overflow: visible;
+  width: 1px;
+  height: 100%;
+  position: absolute;
 }
 </style>
