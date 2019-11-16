@@ -29,11 +29,11 @@ export default {
       default: function () {
         return d3.schemeBlues;
       }
-    }, 
-    annotations:{
+    },
+    annotations: {
       type: Array,
-      default: function(){
-        return [{x: moment('2018-01-01'), text:'some annotation'}]
+      default: function () {
+        return null
       }
     }
   },
@@ -137,89 +137,100 @@ export default {
         });
     },
     appendAnnotations: function () {
+      if (this.annotations === null) { return }
+
       const c = Vue.extend(AnnotationMarker)
       const _this = this
 
-      this.annotations.forEach(function(a){
-        let instance = new c({propsData: {xPos: _this.scale.x(a.x), yPos: 10, text: a.text}})
+      const m = d3.map(this.vizData[0], d => d.x)
+      // I index 0 here because the data is grouped in order to display multiple graphs in one chart
+      // Future implementation should consider indexing by group name and providing a group to props
+      // such that the annotations are bound to the correct group, not just the first one.
+
+      this.annotations.forEach(function (a) {
+        let instance = new c({ 
+          propsData: { 
+            xPos: _this.scale.x(a.x), 
+            yPos: _this.scale.y(m['$'+a.x].y),
+            text: a.text } })
         instance.$mount()
         _this.select.plotArea.node().appendChild(instance.$el)
       })
-  },
-  updateLine: function () {
-    const _this = this;
+    },
+    updateLine: function () {
+      const _this = this;
 
-    const valueline = d3
-      .line()
-      .curve(d3.curveBasis)
-      .x(d => _this.scale.x(d.x))
-      .y(d => _this.scale.y(d.y));
+      const valueline = d3
+        .line()
+        .curve(d3.curveBasis)
+        .x(d => _this.scale.x(d.x))
+        .y(d => _this.scale.y(d.y));
 
-    this.select.path.attr("d", valueline)
-  },
-  updateAxes: function () {
-    this.axis.x = d3
-      .axisBottom(this.scale.x)
-      .ticks(d3.timeMonth.every(6))
-      .tickFormat(d3.timeFormat("%d %B %y"));
+      this.select.path.attr("d", valueline)
+    },
+    updateAxes: function () {
+      this.axis.x = d3
+        .axisBottom(this.scale.x)
+        .ticks(d3.timeMonth.every(6))
+        .tickFormat(d3.timeFormat("%d %B %y"));
 
-    if (this.plotWidth < 500) {
-      this.axis.y = d3.axisRight(this.scale.y)
-    } else {
-      this.axis.y = d3.axisLeft(this.scale.y)
+      if (this.plotWidth < 500) {
+        this.axis.y = d3.axisRight(this.scale.y)
+      } else {
+        this.axis.y = d3.axisLeft(this.scale.y)
+      }
+
+      this.select.xAxis.call(this.axis.x);
+      this.select.yAxis.call(this.axis.y);
+    },
+    setUp: function () {
+      this.setReferences();
+      this.setDomain();
+      this.setScales();
+    },
+    parseDateStrings: function (data) {
+      const _this = this;
+      data.forEach(function (d) {
+        d[_this.binding.x] = moment(d[_this.binding.x], "MM/DD/YYYY");
+      });
+      return data;
+    },
+    // eslint-disable-next-line no-unused-vars
+    emphasize: function (_d, hoverNode) {
+      d3.selectAll(".line").classed("passive", true);
+      d3.select(hoverNode).classed("passive", false);
+      d3.selectAll(".passive")
+        .transition()
+        .duration(500)
+        .style("opacity", 0.1);
+    },
+    equalize: function () {
+      d3.selectAll(".line")
+        .classed("passive", false)
+        .transition()
+        .duration(500)
+        .style("opacity", 1);
+    },
+    handleResize: function () {
+      this.setScales();
+      this.updateAxes();
+      this.updateLine();
     }
+  },
 
-    this.select.xAxis.call(this.axis.x);
-    this.select.yAxis.call(this.axis.y);
-  },
-  setUp: function () {
-    this.setReferences();
-    this.setDomain();
-    this.setScales();
-  },
-  parseDateStrings: function (data) {
+  mounted() {
     const _this = this;
-    data.forEach(function (d) {
-      d[_this.binding.x] = moment(d[_this.binding.x], "MM/DD/YYYY");
+    const _window = window;
+    d3.csv(this.dataURL, d3.autoType).then(function (data) {
+      _this.rawData = _this.parseDateStrings(data);
+      _this.vizData = _this.transformData(_this.rawData);
+      _this.setUp();
+      _this.drawPlot();
+      _this.appendAnnotations();
+      _this.updateLine();
+      _this.updateAxes();
+      _this.setZoom();
+      _window.addEventListener('resize', _this.handleResize)
     });
-    return data;
   },
-  // eslint-disable-next-line no-unused-vars
-  emphasize: function (_d, hoverNode) {
-    d3.selectAll(".line").classed("passive", true);
-    d3.select(hoverNode).classed("passive", false);
-    d3.selectAll(".passive")
-      .transition()
-      .duration(500)
-      .style("opacity", 0.1);
-  },
-  equalize: function () {
-    d3.selectAll(".line")
-      .classed("passive", false)
-      .transition()
-      .duration(500)
-      .style("opacity", 1);
-  },
-  handleResize: function () {
-    this.setScales();
-    this.updateAxes();
-    this.updateLine();
-  }
-},
-
-mounted() {
-  const _this = this;
-  const _window = window;
-  d3.csv(this.dataURL, d3.autoType).then(function (data) {
-    _this.rawData = _this.parseDateStrings(data);
-    _this.vizData = _this.transformData(_this.rawData);
-    _this.setUp();
-    _this.drawPlot();
-    _this.appendAnnotations();
-    _this.updateLine();
-    _this.updateAxes();
-    _this.setZoom();
-    _window.addEventListener('resize', _this.handleResize)
-  });
-},
 };
