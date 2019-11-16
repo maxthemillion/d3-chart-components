@@ -7,7 +7,7 @@
         <div class="xAxisTitle axisTitle" v-if="xAxisTitle !== null">{{this.xAxisTitle}}</div>
         <div class="yAxisTitle axisTitle" v-if="yAxisTitle !== null">{{this.yAxisTitle}}</div>
         <svg id="yAxisViewport">
-          <g ref="yAxis" class="yaxis axis" transform="translate(50, 0)"/>
+          <g ref="yAxis" class="yaxis axis" transform="translate(50, 0)" />
         </svg>
         <svg id="chartSVG" ref="chartSVG">
           <g ref="chartGroup">
@@ -17,8 +17,9 @@
         </svg>
         <svg id="xAxisViewport">
           <g ref="xAxis" class="xaxis axis" />
-        </svg>  
+        </svg>
       </div>
+      <div id="comment"><b>{{this.commentTitle}}</b> - {{this.comment}}</div>
     </div>
   </div>
 </template>
@@ -31,7 +32,20 @@ import * as d3 from "d3";
 export default {
   name: "Linechart",
   extends: LinechartCore,
-  props: {},
+  props: {
+    chartTitle: {
+      type: String,
+      default: "Chart Title"
+    },
+    chartSubTitle: {
+      type: String,
+      default: "subtitle"
+    },
+    comment: { type: String, default: "comment" },
+    commentTitle: {type: String, default: "comment title"},
+    xAxisTitle: { type: String, default: "xAxis" },
+    yAxisTitle: { type: String, default: "yAxis" }
+  },
   data: function() {
     return {};
   },
@@ -90,11 +104,12 @@ export default {
 <style>
 .axisTitle {
   font-size: small;
+  font-weight: bold;
 }
 
 .xAxisTitle {
   position: absolute;
-  bottom: -50px;
+  bottom: -40px;
   left: 10%;
 }
 
@@ -151,11 +166,18 @@ export default {
   width: 100%;
 }
 
+#comment {
+  margin-top: 50px;
+  width: 100%;
+  text-align: left;
+  font-size: x-small;
+}
+
 #xAxisViewport {
   width: 100%;
   overflow: visible;
   position: absolute;
-  height:50px;
+  height: 50px;
   bottom: -50px;
   left: 0;
 }
@@ -166,4 +188,5 @@ export default {
   position: absolute;
   left: -50px;
 }
+
 </style>

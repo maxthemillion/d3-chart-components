@@ -4,16 +4,6 @@ import * as moment from "moment";
 export default {
   name: "LinechartCore",
   props: {
-    chartTitle: {
-      type: String,
-      default: "Chart Title"
-    },
-    chartSubTitle: {
-      type: String,
-      default: "subtitle"
-    },
-    xAxisTitle: { type: String, default: "xAxis" },
-    yAxisTitle: { type: String, default: "yAxis" },
     xDomain: {
       type: Array,
       default: function() {
