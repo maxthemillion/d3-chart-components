@@ -1,5 +1,7 @@
 import * as d3 from "d3";
 import * as moment from "moment";
+import Vue from 'vue'
+import AnnotationMarker from '../components/AnnotationMarker.vue'
 
 export default {
   name: "LinechartCore",
@@ -26,6 +28,12 @@ export default {
       type: d3.colorScheme,
       default: function () {
         return d3.schemeBlues;
+      }
+    }, 
+    annotations:{
+      type: Array,
+      default: function(){
+        return [{x: moment('2018-01-01'), text:'some annotation'}]
       }
     }
   },
@@ -128,81 +136,90 @@ export default {
           _this.equalize();
         });
     },
-    updateLine: function () {
-      const _this = this;
+    appendAnnotations: function () {
+      const c = Vue.extend(AnnotationMarker)
+      const _this = this
 
-      const valueline = d3
-        .line()
-        .curve(d3.curveBasis)
-        .x(d => _this.scale.x(d.x))
-        .y(d => _this.scale.y(d.y));
-
-      this.select.path.attr("d", valueline)
-    },
-    updateAxes: function () {
-      this.axis.x = d3
-        .axisBottom(this.scale.x)
-        .ticks(d3.timeMonth.every(6))
-        .tickFormat(d3.timeFormat("%d %B %y"));
-
-      if (this.plotWidth < 500) {
-        this.axis.y = d3.axisRight(this.scale.y)
-
-      } else {
-        this.axis.y = d3.axisLeft(this.scale.y)
-
-      }
-
-      this.select.xAxis.call(this.axis.x);
-      this.select.yAxis.call(this.axis.y);
-    },
-    setUp: function () {
-      this.setReferences();
-      this.setDomain();
-      this.setScales();
-    },
-    parseDateStrings: function (data) {
-      const _this = this;
-      data.forEach(function (d) {
-        d[_this.binding.x] = moment(d[_this.binding.x], "MM/DD/YYYY");
-      });
-      return data;
-    },
-    // eslint-disable-next-line no-unused-vars
-    emphasize: function (_d, hoverNode) {
-      d3.selectAll(".line").classed("passive", true);
-      d3.select(hoverNode).classed("passive", false);
-      d3.selectAll(".passive")
-        .transition()
-        .duration(500)
-        .style("opacity", 0.1);
-    },
-    equalize: function () {
-      d3.selectAll(".line")
-        .classed("passive", false)
-        .transition()
-        .duration(500)
-        .style("opacity", 1);
-    },
-    handleResize: function () {
-      this.setScales();
-      this.updateAxes();
-      this.updateLine();
-    }
+      this.annotations.forEach(function(a){
+        let instance = new c({propsData: {xPos: _this.scale.x(a.x), yPos: 10, text: a.text}})
+        instance.$mount()
+        _this.select.plotArea.node().appendChild(instance.$el)
+      })
   },
-
-  mounted() {
+  updateLine: function () {
     const _this = this;
-    const _window = window;
-    d3.csv(this.dataURL, d3.autoType).then(function (data) {
-      _this.rawData = _this.parseDateStrings(data);
-      _this.vizData = _this.transformData(_this.rawData);
-      _this.setUp();
-      _this.drawPlot();
-      _this.updateLine();
-      _this.updateAxes();
-      _this.setZoom();
-      _window.addEventListener('resize', _this.handleResize)
-    });
+
+    const valueline = d3
+      .line()
+      .curve(d3.curveBasis)
+      .x(d => _this.scale.x(d.x))
+      .y(d => _this.scale.y(d.y));
+
+    this.select.path.attr("d", valueline)
   },
+  updateAxes: function () {
+    this.axis.x = d3
+      .axisBottom(this.scale.x)
+      .ticks(d3.timeMonth.every(6))
+      .tickFormat(d3.timeFormat("%d %B %y"));
+
+    if (this.plotWidth < 500) {
+      this.axis.y = d3.axisRight(this.scale.y)
+    } else {
+      this.axis.y = d3.axisLeft(this.scale.y)
+    }
+
+    this.select.xAxis.call(this.axis.x);
+    this.select.yAxis.call(this.axis.y);
+  },
+  setUp: function () {
+    this.setReferences();
+    this.setDomain();
+    this.setScales();
+  },
+  parseDateStrings: function (data) {
+    const _this = this;
+    data.forEach(function (d) {
+      d[_this.binding.x] = moment(d[_this.binding.x], "MM/DD/YYYY");
+    });
+    return data;
+  },
+  // eslint-disable-next-line no-unused-vars
+  emphasize: function (_d, hoverNode) {
+    d3.selectAll(".line").classed("passive", true);
+    d3.select(hoverNode).classed("passive", false);
+    d3.selectAll(".passive")
+      .transition()
+      .duration(500)
+      .style("opacity", 0.1);
+  },
+  equalize: function () {
+    d3.selectAll(".line")
+      .classed("passive", false)
+      .transition()
+      .duration(500)
+      .style("opacity", 1);
+  },
+  handleResize: function () {
+    this.setScales();
+    this.updateAxes();
+    this.updateLine();
+  }
+},
+
+mounted() {
+  const _this = this;
+  const _window = window;
+  d3.csv(this.dataURL, d3.autoType).then(function (data) {
+    _this.rawData = _this.parseDateStrings(data);
+    _this.vizData = _this.transformData(_this.rawData);
+    _this.setUp();
+    _this.drawPlot();
+    _this.appendAnnotations();
+    _this.updateLine();
+    _this.updateAxes();
+    _this.setZoom();
+    _window.addEventListener('resize', _this.handleResize)
+  });
+},
 };

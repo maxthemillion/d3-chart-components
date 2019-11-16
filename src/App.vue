@@ -16,7 +16,7 @@ export default {
   data(){
     return{
       opts:{
-        dataURL: "./data/approval_topline.csv",
+        dataURL: "./data/approval_allpolls.csv",
         chartTitle: "How unpopular is Donald Trump?",
         chartSubTitle: "Share of respondents disapproving the president (in %)",
         commentTitle: "The unwanted president",

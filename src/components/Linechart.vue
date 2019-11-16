@@ -11,7 +11,7 @@
         </svg>
         <svg id="chartSVG" ref="chartSVG">
           <g ref="chartGroup">
-            <g ref="plotArea" transform="translate(0,0)" />
+            <g ref="plotArea" transform="translate(0,0)" /> 
             <g ref="plotLegend" />
           </g>
         </svg>
@@ -42,7 +42,7 @@ export default {
       default: "subtitle"
     },
     comment: { type: String, default: "comment" },
-    commentTitle: {type: String, default: "comment title"},
+    commentTitle: { type: String, default: "comment title" },
     xAxisTitle: { type: String, default: "xAxis" },
     yAxisTitle: { type: String, default: "yAxis" }
   },
@@ -167,7 +167,7 @@ export default {
 }
 
 #comment {
-  margin-top: 50px;
+  margin-top: 30px;
   width: 100%;
   text-align: left;
   font-size: x-small;
@@ -188,5 +188,4 @@ export default {
   position: absolute;
   left: -50px;
 }
-
 </style>
