@@ -6,7 +6,7 @@ export default {
   props: {
     xDomain: {
       type: Array,
-      default: function() {
+      default: function () {
         return null; //TODO: it doesn't work to set the xDomain yet. Seems to be some problem with scales
       }
     },
@@ -16,7 +16,7 @@ export default {
     },
     yDomain: {
       type: Array,
-      default: function() {
+      default: function () {
         return null;
       }
     },
@@ -24,7 +24,7 @@ export default {
     binding: Object,
     colorScheme: {
       type: d3.colorScheme,
-      default: function() {
+      default: function () {
         return d3.schemeBlues;
       }
     }
@@ -42,7 +42,7 @@ export default {
   },
   watch: {},
   methods: {
-    setReferences: function() {
+    setReferences: function () {
       this.select.svg = d3.select(this.$refs.chartSVG);
       this.select.chartGroup = d3.select(this.$refs.chartGroup);
       this.select.xAxis = d3.select(this.$refs.xAxis);
@@ -50,7 +50,7 @@ export default {
       this.select.plotArea = d3.select(this.$refs.plotArea);
       this.select.plotLegend = d3.select(this.$refs.plotLegend);
     },
-    setDomain: function() {
+    setDomain: function () {
       const _this = this;
 
       if (this.xDomain !== null) {
@@ -76,7 +76,9 @@ export default {
         this.domain.y.min = d3.min(this.rawData, d => d[_this.binding.y]);
       }
     },
-    setScales: function() {
+    setScales: function () {
+      this.color = d3.scaleOrdinal(this.colorScheme);
+
       this.scale.x = d3
         .scaleTime()
         .range([0, this.select.svg.node().getBoundingClientRect().width])
@@ -102,10 +104,29 @@ export default {
         _this.select.yAxis.call(_this.axis.y.scale(d3.event.transform.rescaleY(_this.scale.y)));
       }
     },
-    drawPlot: function() {
+    drawPlot: function () {
       const _this = this;
 
-      const color = d3.scaleOrdinal(this.colorScheme);
+      this.select.lines = this.select.plotArea
+        .append("g")
+        .selectAll("g")
+        .data(this.vizData)
+        .join("g");
+
+      this.select.path = this.select.lines.append("path")
+        .attr("fill", "none")
+        .attr("class", "line")
+        .attr("stroke", d => this.color(d[0].color))
+        .attr("stroke-width", 1.5)
+        .on("mouseover", function (d) {
+          _this.emphasize(d, this);
+        })
+        .on("mouseout", function () {
+          _this.equalize();
+        });
+    },
+    updateLine: function(){
+      const _this = this;
 
       const valueline = d3
         .line()
@@ -113,26 +134,9 @@ export default {
         .x(d => _this.scale.x(d.x))
         .y(d => _this.scale.y(d.y));
 
-      let g = this.select.plotArea
-        .append("g")
-        .selectAll("g")
-        .data(this.vizData)
-        .join("g");
-
-      g.append("path")
-        .attr("fill", "none")
-        .attr("class", "line")
-        .attr("stroke", d => color(d[0].color))
-        .attr("stroke-width", 1.5)
-        .attr("d", valueline)
-        .on("mouseover", function(d) {
-          _this.emphasize(d, this);
-        })
-        .on("mouseout", function() {
-          _this.equalize();
-        });
+        this.select.path.attr("d", valueline)
     },
-    drawAxes: function() {
+    updateAxes: function () {
       this.axis.x = d3
         .axisBottom(this.scale.x)
         .ticks(d3.timeMonth.every(6))
@@ -143,20 +147,20 @@ export default {
       this.select.xAxis.call(this.axis.x);
       this.select.yAxis.call(this.axis.y);
     },
-    setUp: function() {
+    setUp: function () {
       this.setReferences();
       this.setDomain();
       this.setScales();
     },
-    parseDateStrings: function(data) {
+    parseDateStrings: function (data) {
       const _this = this;
-      data.forEach(function(d) {
+      data.forEach(function (d) {
         d[_this.binding.x] = moment(d[_this.binding.x], "MM/DD/YYYY");
       });
       return data;
     },
     // eslint-disable-next-line no-unused-vars
-    emphasize: function(_d, hoverNode) {
+    emphasize: function (_d, hoverNode) {
       d3.selectAll(".line").classed("passive", true);
       d3.select(hoverNode).classed("passive", false);
       d3.selectAll(".passive")
@@ -164,24 +168,32 @@ export default {
         .duration(500)
         .style("opacity", 0.1);
     },
-    equalize: function() {
+    equalize: function () {
       d3.selectAll(".line")
         .classed("passive", false)
         .transition()
         .duration(500)
         .style("opacity", 1);
+    },
+    handleResize: function() {
+      this.setScales();
+      this.updateAxes();
+      this.updateLine();
     }
   },
 
   mounted() {
     const _this = this;
-    d3.csv(this.dataURL, d3.autoType).then(function(data) {
+    const _window = window;
+    d3.csv(this.dataURL, d3.autoType).then(function (data) {
       _this.rawData = _this.parseDateStrings(data);
       _this.vizData = _this.transformData(_this.rawData);
       _this.setUp();
       _this.drawPlot();
-      _this.drawAxes();
+      _this.updateLine();
+      _this.updateAxes();
       _this.setZoom();
+      _window.addEventListener('resize', _this.handleResize)
     });
-  }
+  },
 };

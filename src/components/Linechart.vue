@@ -137,7 +137,7 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: start;
-  width: 500px;
+  max-width: 500px;
 }
 
 #chartWrapper {
