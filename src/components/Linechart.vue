@@ -109,8 +109,8 @@ export default {
 
 .xAxisTitle {
   position: absolute;
-  bottom: -40px;
-  left: 10%;
+  bottom: 2px;
+  right: 0;
 }
 
 .yAxisTitle {

@@ -79,14 +79,17 @@ export default {
     setScales: function () {
       this.color = d3.scaleOrdinal(this.colorScheme);
 
+      this.plotWidth = this.select.svg.node().getBoundingClientRect().width
+      this.plotHeight = this.select.svg.node().getBoundingClientRect().height
+
       this.scale.x = d3
         .scaleTime()
-        .range([0, this.select.svg.node().getBoundingClientRect().width])
+        .range([0, this.plotWidth])
         .domain([this.domain.x.min, this.domain.x.max]);
 
       this.scale.y = d3
         .scaleLinear()
-        .range([this.select.svg.node().getBoundingClientRect().height, 0])
+        .range([this.plotHeight, 0])
         .domain([this.domain.y.min, this.domain.y.max]);
     },
     setZoom() {
@@ -125,7 +128,7 @@ export default {
           _this.equalize();
         });
     },
-    updateLine: function(){
+    updateLine: function () {
       const _this = this;
 
       const valueline = d3
@@ -134,7 +137,7 @@ export default {
         .x(d => _this.scale.x(d.x))
         .y(d => _this.scale.y(d.y));
 
-        this.select.path.attr("d", valueline)
+      this.select.path.attr("d", valueline)
     },
     updateAxes: function () {
       this.axis.x = d3
@@ -142,7 +145,13 @@ export default {
         .ticks(d3.timeMonth.every(6))
         .tickFormat(d3.timeFormat("%d %B %y"));
 
-      this.axis.y = d3.axisLeft(this.scale.y)
+      if (this.plotWidth < 500) {
+        this.axis.y = d3.axisRight(this.scale.y)
+
+      } else {
+        this.axis.y = d3.axisLeft(this.scale.y)
+
+      }
 
       this.select.xAxis.call(this.axis.x);
       this.select.yAxis.call(this.axis.y);
@@ -175,7 +184,7 @@ export default {
         .duration(500)
         .style("opacity", 1);
     },
-    handleResize: function() {
+    handleResize: function () {
       this.setScales();
       this.updateAxes();
       this.updateLine();
