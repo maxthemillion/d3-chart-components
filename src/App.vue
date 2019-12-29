@@ -21,7 +21,7 @@ export default {
         chartTitle: "How unpopular is Donald Trump?",
         chartSubTitle: "Share of respondents disapproving the president (in %)",
         commentTitle: "The unwanted president",
-        comment: "Disapproval among Voters increased sharply right after his inauguration but levelled of at a stabl 50-55 percent shortly after.",
+        comment: "Disapproval among Voters increased sharply right after his inauguration but levelled off at a stable 50-55 percent shortly after.",
         binding:  { x: "modeldate", y: "disapprove_estimate", color: "subgroup"},
         xAxisTitle: "Time in office",
         yAxisTitle: null,
