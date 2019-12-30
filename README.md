@@ -12,17 +12,17 @@ Instead of filling the chart with data on the president's approval ratings, you 
 
 ## opts arguments
 The opts object of the Linechart component takes the following arguments:
-    - dataURL: relative path to the data in csv format (eg. "./data/approval_allpolls.csv")
-    - chartTitle: string (eg. "How unpopular is Donald Trump?")
-    - chartSubTitle: string (eg. "Share of respondents disapproving the president (in %)")
-    - commentTitle: string that becomes the title for the chart's comment (eg. "The unwanted president")
-    - comment: string that explains the content of the chart in more detail
-    - binding: object with the following properties { 
-        x: heading of the data to map on the x-axis
-        y: heading of the data to map on the y-axis 
-        color: heading of the data to map to colors
-        }
-    - xAxisTitle: string, null for no title
-    - yAxisTitle: string, null for no title
-    - colorScheme: d3-color scheme such as d3.schemeTableau10
-    - annotations: array of objects in the format {x: ... , text: ...}
+- dataURL: relative path to the data in csv format (eg. "./data/approval_allpolls.csv")
+- chartTitle: string (eg. "How unpopular is Donald Trump?")
+- chartSubTitle: string (eg. "Share of respondents disapproving the president (in %)")
+- commentTitle: string that becomes the title for the chart's comment (eg. "The unwanted president")
+- comment: string that explains the content of the chart in more detail
+- binding: object with the following properties { 
+    - x: heading of the data to map on the x-axis
+    - y: heading of the data to map on the y-axis 
+    - color: heading of the data to map to colors
+    }
+- xAxisTitle: string, null for no title
+- yAxisTitle: string, null for no title
+- colorScheme: d3-color scheme such as d3.schemeTableau10
+- annotations: array of objects in the format {x: ... , text: ...}
