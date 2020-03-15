@@ -1,18 +1,18 @@
 {
-  "name": "roughjs-test",
+  "name": "@maxthemillion/vued3-linechart",
   "version": "0.1.0",
-  "private": true,
+  "main":"./dist/d3LineChart.common.js",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "build-package":"vue-cli-service build --target lib --name d3LineChart ./src/main.js"
   },
   "dependencies": {
     "core-js": "^3.3.2",
     "d3": "^5.12.0",
     "d3-dsv": "^1.1.1",
     "moment": "^2.24.0",
-    "roughjs": "^3.1.0",
     "vue": "^2.6.10"
   },
   "devDependencies": {
@@ -47,5 +47,12 @@
   "browserslist": [
     "> 1%",
     "last 2 versions"
+  ],
+  "files": [
+    "dist/*",
+    "src/*",
+    "public/*",
+    "*.json",
+    "*.js"
   ]
 }
