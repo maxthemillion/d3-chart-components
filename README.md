@@ -8,7 +8,14 @@ It comes with:
 - panning
 - annotation markers
 
-Instead of filling the chart with data on the president's approval ratings, you could just go ahead and put in time series data on electricity prices. Instead of re-reading the documentation on D3 each time that you want to add a title on a chart, you can now easily pass title texts as opts to the chart component.
+Instead of filling the chart with data on the president's approval ratings, you could just go ahead and put in time series data on electricity prices. Instead of re-reading the documentation on D3 each time that you want to add a title on a chart, you can easily pass title texts as opts to the chart component.
+
+## Installation
+Install from npm:
+> npm i @maxthemillion/vued3-linechart
+
+Import to your main.js: 
+> import app from '@maxthemillion/vued3-linechart'
 
 ## opts arguments
 The opts object of the Linechart component takes the following arguments:
