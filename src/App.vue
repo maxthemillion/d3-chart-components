@@ -6,6 +6,7 @@
 
 <script>
 import Linechart from "./components/Linechart.vue";
+import './style.scss'
 
 export default {
   name: "app",
