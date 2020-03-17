@@ -5,13 +5,42 @@ import * as d3 from "d3"
 
 Vue.config.productionTip = false
 
-let opts = {
+// eslint-disable-next-line no-unused-vars
+let opts_quantitativeX = {
+  dataURL: "./data/all_sel.csv",
+  chartTitle: "Share of deaths in confirmed COVID19 cases",
+  chartSubTitle: "Are countries undertesting?",
+  commentTitle: "Who's up to the challenge?",
+  comment: "While Germany and South Korea have very low numbers of deaths in confirmed cases, Italy and originally also the US did not. Assuming (almost) equal standards in health treatment across these industrialized countries, the figures may be an indicator on whether countries are undertesting.",
+  binding:  { 
+    x: "days_since100", 
+    xType:'Q', 
+    y: "death_rate", 
+    yType:'Q',
+    color: "country",
+    colorType:"N"
+  },
+  xAxisTitle: "Time in office",
+  yAxisTitle: null,
+  colorScheme: d3.schemeTableau10,
+  annotations: []
+}
+
+// eslint-disable-next-line no-unused-vars
+let opts_dateX = {
   dataURL: "./data/approval_allpolls.csv",
   chartTitle: "How unpopular is the US president?",
   chartSubTitle: "Share of respondents disapproving the president (in %)",
   commentTitle: "The unwanted president",
   comment: "Disapproval among Voters increased sharply right after his inauguration but levelled off at a stable 50-55 percent shortly after.",
-  binding:  { x: "modeldate", y: "disapprove_estimate", color: "subgroup"},
+  binding:  { 
+    x: "modeldate", 
+    xType: "T",
+    y: "disapprove_estimate",
+    yType: "Q", 
+    color: "subgroup",
+    colorType: "N"
+  },
   xAxisTitle: "Time in office",
   yAxisTitle: null,
   colorScheme: d3.schemeTableau10,
@@ -24,5 +53,7 @@ let opts = {
 }
 
 new Vue({
-  render: h => h(App, {props:{ opts: opts}}),
+  render: h => h(App, {props:{ opts: opts_quantitativeX}}),
 }).$mount('#app')
+
+

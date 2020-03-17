@@ -51,6 +51,8 @@ export default {
   },
   methods: {
     nestData: function(data) {
+      //TODO: remove data manipulation from component. This should be only responsible for 
+      // viewing the data, not for converting it to the correct format...
       const _this = this;
       const res = d3
         .nest()
@@ -72,20 +74,28 @@ export default {
       return res;
     },
     flattenData: function(data) {
+      let _this = this;
       let outer = [];
       data.forEach(function(a) {
         let inner = [];
         a.values.forEach(function(b) {
           inner.push({
-            color: a.key,
-            x: moment(parseInt(b.key)),
-            y: b.value
+            color: _this.convert(a.key, _this.binding.colorType),
+            x: _this.convert(b.key, _this.binding.xType),
+            y: _this.convert(b.value, _this.binding.yType)
           });
         });
         outer.push(inner);
       });
 
       return outer;
+    },
+    convert: function(datum, type){
+      if(type ==='Q' || type ==='N'){
+        return datum
+      }else if(type === 'T'){
+        return moment(parseInt(datum))
+      }
     },
     transformData: function(data) {
       /**

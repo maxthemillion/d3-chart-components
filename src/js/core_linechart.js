@@ -50,6 +50,11 @@ export default {
   },
   watch: {},
   methods: {
+    setUp: function () {
+      this.setReferences();
+      this.setDomain();
+      this.setScales();
+    },
     setReferences: function () {
       this.select.svg = d3.select(this.$refs.chartSVG);
       this.select.chartGroup = d3.select(this.$refs.chartGroup);
@@ -90,8 +95,15 @@ export default {
       this.plotWidth = this.select.svg.node().getBoundingClientRect().width
       this.plotHeight = this.select.svg.node().getBoundingClientRect().height
 
-      this.scale.x = d3
-        .scaleTime()
+      if(this.binding.xType === 'T'){
+        this.scale.x = d3
+          .scaleTime()
+      }else if(this.binding.xType === 'Q'){
+        this.scale.x = d3
+          .scaleLinear()
+      }
+
+      this.scale.x = this.scale.x
         .range([0, this.plotWidth])
         .domain([this.domain.x.min, this.domain.x.max]);
 
@@ -116,7 +128,7 @@ export default {
       }
     },
     drawPlot: function () {
-      const _this = this;
+      const _this = this
 
       this.select.lines = this.select.plotArea
         .append("g")
@@ -128,13 +140,56 @@ export default {
         .attr("fill", "none")
         .attr("class", "line")
         .attr("stroke", d => this.color(d[0].color))
-        .attr("stroke-width", 1.5)
-        .on("mouseover", function (d) {
-          _this.emphasize(d, this);
+        .attr("stroke-width", 2)
+        .attr("stroke-linejoin", "round")
+        .attr("stroke-linecap", "round")
+      
+      this.select.svg.call(_this.hover, _this.select.path)
+
+    },
+    hover(svg, path) {
+      if ("ontouchstart" in document) svg
+          .style("-webkit-tap-highlight-color", "transparent")
+          .on("touchstart", entered)
+          .on("touchend", left)
+      else svg
+          .on("mouseenter", entered)
+          .on("mouseleave", left);
+      
+      path.
+        on("mouseover", function (d) {
+          emphasize(d, this);
         })
-        .on("mouseout", function () {
-          _this.equalize();
-        });
+        .on("mouseout", equalize);
+
+      function entered() {
+        d3.selectAll(".line")
+          .transition()
+          .style("opacity", 0.5);
+      }
+    
+      function left() {
+        d3.selectAll(".line")
+          .transition()
+          .style("opacity", 1);
+        }
+
+      // eslint-disable-next-line no-unused-vars
+      function emphasize(_d, hoverNode) {
+        d3.selectAll(".line").classed("passive", true);
+        d3.select(hoverNode).classed("passive", false).transition()
+        .style("opacity", 1);
+        d3.selectAll(".passive")
+          .transition()
+          .style("opacity", 0.2);
+        }
+
+      function equalize() {
+        d3.selectAll(".line")
+          .classed("passive", false)
+          .transition()
+          .style("opacity", 0.5);
+      }
     },
     appendAnnotations: function () {
       if (this.annotations === null) { return }
@@ -162,7 +217,7 @@ export default {
 
       const valueline = d3
         .line()
-        .curve(d3.curveBasis)
+        .curve(d3.curveLinear)
         .x(d => _this.scale.x(d.x))
         .y(d => _this.scale.y(d.y));
 
@@ -179,14 +234,8 @@ export default {
       } else {
         this.axis.y = d3.axisLeft(this.scale.y)
       }
-
       this.select.xAxis.call(this.axis.x);
       this.select.yAxis.call(this.axis.y);
-    },
-    setUp: function () {
-      this.setReferences();
-      this.setDomain();
-      this.setScales();
     },
     parseDateStrings: function (data) {
       const _this = this;
@@ -194,22 +243,6 @@ export default {
         d[_this.binding.x] = moment(d[_this.binding.x], "MM/DD/YYYY");
       });
       return data;
-    },
-    // eslint-disable-next-line no-unused-vars
-    emphasize: function (_d, hoverNode) {
-      d3.selectAll(".line").classed("passive", true);
-      d3.select(hoverNode).classed("passive", false);
-      d3.selectAll(".passive")
-        .transition()
-        .duration(500)
-        .style("opacity", 0.1);
-    },
-    equalize: function () {
-      d3.selectAll(".line")
-        .classed("passive", false)
-        .transition()
-        .duration(500)
-        .style("opacity", 1);
     },
     handleResize: function () {
       this.setScales();
@@ -222,7 +255,11 @@ export default {
     const _this = this;
     const _window = window;
     d3.csv(this.dataURL, d3.autoType).then(function (data) {
-      _this.rawData = _this.parseDateStrings(data);
+      if(_this.binding.xType==='T'){
+        _this.rawData = _this.parseDateStrings(data)
+      }else{
+        _this.rawData = data
+      }
       _this.vizData = _this.transformData(_this.rawData);
       _this.setUp();
       _this.drawPlot();
