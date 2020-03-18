@@ -148,6 +148,8 @@ export default {
 
     },
     hover(svg, path) {
+      // Find example here: https://observablehq.com/@d3/multi-line-chart
+      // TODO: highlight line that is closest to cursor
       if ("ontouchstart" in document) svg
           .style("-webkit-tap-highlight-color", "transparent")
           .on("touchstart", entered)
@@ -157,15 +159,15 @@ export default {
           .on("mouseleave", left);
       
       path.
-        on("mouseover", function (d) {
-          emphasize(d, this);
+        on("mouseover", function () {
+          emphasize(this);
         })
         .on("mouseout", equalize);
 
       function entered() {
         d3.selectAll(".line")
           .transition()
-          .style("opacity", 0.5);
+          .style("opacity", 0.3);
       }
     
       function left() {
@@ -174,21 +176,16 @@ export default {
           .style("opacity", 1);
         }
 
-      // eslint-disable-next-line no-unused-vars
-      function emphasize(_d, hoverNode) {
-        d3.selectAll(".line").classed("passive", true);
-        d3.select(hoverNode).classed("passive", false).transition()
+      function emphasize(hoverNode) {
+        d3.select(hoverNode)
+        .transition()
         .style("opacity", 1);
-        d3.selectAll(".passive")
-          .transition()
-          .style("opacity", 0.2);
         }
 
       function equalize() {
         d3.selectAll(".line")
-          .classed("passive", false)
           .transition()
-          .style("opacity", 0.5);
+          .style("opacity", 0.3);
       }
     },
     appendAnnotations: function () {
