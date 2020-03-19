@@ -148,6 +148,9 @@ export default {
 
     },
     hover(svg, path) {
+      
+      const _this = this
+
       // Find example here: https://observablehq.com/@d3/multi-line-chart
       // TODO: highlight line that is closest to cursor
       if ("ontouchstart" in document) svg
@@ -156,18 +159,62 @@ export default {
           .on("touchend", left)
       else svg
           .on("mouseenter", entered)
-          .on("mouseleave", left);
+          .on("mouseleave", left)
+          .on("mousemove", moved);
       
       path.
         on("mouseover", function () {
           emphasize(this);
         })
         .on("mouseout", equalize);
+      
+      const dot = svg.append("g")
+        .attr("display", "none");
+
+      dot.append("circle")
+        .attr("r", 2.5);
+  
+      dot.append("text")
+        .attr("font-family", "sans-serif")
+        .attr("font-size", 10)
+        .attr("text-anchor", "middle")
+        .attr("y", -8);
 
       function entered() {
         d3.selectAll(".line")
           .transition()
           .style("opacity", 0.3);
+      }
+
+      function moved() {
+
+        // eslint-disable-next-line no-debugger
+        debugger;
+
+        d3.event.preventDefault();
+        dot.attr("display", "true");
+
+        //let domainX =_this.scale.x.invert(d3.event.layerX)
+        //let domainY =_this.scale.y.invert(d3.event.layerY)
+
+        let series = d3.nest()
+          .key(function(d){return d.color})
+          .rollup(function(l){return l.map(d => d.y)})
+          .entries(_this.vizData)
+
+        let unique_x = [...new Set(_this.vizData.map(d => d.x))];
+
+
+        const ym = _this.scale.y.invert(d3.event.layerY);
+        const xm = _this.scale.x.invert(d3.event.layerX);
+        const i1 = d3.bisectLeft(unique_x, xm, 1);
+        const i0 = i1 - 1;
+        const i = xm - unique_x[i0] > unique_x[i1] - xm ? i1 : i0;
+        const s = d3.least(series, d => Math.abs(d.value[i] - ym));
+        path.attr("stroke", d => d === s ? null : "#ddd").filter(d => d === s).raise();
+        dot.attr("transform", `translate(${_this.scale.x(unique_x[i])},${_this.scale.y(s.value[i])})`);
+        dot.select("text").text(s.key);
+
       }
     
       function left() {

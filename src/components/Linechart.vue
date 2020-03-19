@@ -50,46 +50,6 @@ export default {
     return {};
   },
   methods: {
-    nestData: function(data) {
-      //TODO: remove data manipulation from component. This should be only responsible for 
-      // viewing the data, not for converting it to the correct format...
-      const _this = this;
-      const res = d3
-        .nest()
-        .key(function(d) {
-          return d[_this.binding.color];
-        })
-        .key(function(d) {
-          return d[_this.binding.x];
-        })
-        .rollup(function(l) {
-          return l
-            .map(function(d) {
-              return d[_this.binding.y];
-            })
-            .reduce((a, b) => a + b, 0);
-        })
-        .entries(data);
-
-      return res;
-    },
-    flattenData: function(data) {
-      let _this = this;
-      let outer = [];
-      data.forEach(function(a) {
-        let inner = [];
-        a.values.forEach(function(b) {
-          inner.push({
-            color: _this.convert(a.key, _this.binding.colorType),
-            x: _this.convert(b.key, _this.binding.xType),
-            y: _this.convert(b.value, _this.binding.yType)
-          });
-        });
-        outer.push(inner);
-      });
-
-      return outer;
-    },
     convert: function(datum, type){
       if(type ==='Q' || type ==='N'){
         return datum
@@ -102,8 +62,12 @@ export default {
        *   transformData needs to be changed according to the structure of the data.
        *   output data format is [{color: 'xx', x: 'xx',y: 'xx'},...]
        **/
-      const nestedData = this.nestData(data);
-      const vizData = this.flattenData(nestedData);
+
+      // [ {color:A, x:v, y:v}, {color:A, x:v, y:v},  ...]
+      const vizData = data.map(function(d){})
+
+
+
       return vizData;
     }
   }
