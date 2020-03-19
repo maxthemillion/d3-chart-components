@@ -1,17 +1,25 @@
 <template>
   <div id="pageWrapper">
     <div id="contentWrapper">
-      <div id="chartTitle" ref="chartTitle" v-if="chartTitle !== null">{{ this.chartTitle }}</div>
-      <div id="chartSubTitle" v-if="chartSubTitle !== null">{{this.chartSubTitle}}</div>
+      <div id="chartTitle" ref="chartTitle" v-if="chartTitle !== null">
+        {{ this.chartTitle }}
+      </div>
+      <div id="chartSubTitle" v-if="chartSubTitle !== null">
+        {{ this.chartSubTitle }}
+      </div>
       <div id="chartWrapper" ref="chartWrapper">
-        <div class="xAxisTitle axisTitle" v-if="xAxisTitle !== null">{{this.xAxisTitle}}</div>
-        <div class="yAxisTitle axisTitle" v-if="yAxisTitle !== null">{{this.yAxisTitle}}</div>
+        <div class="xAxisTitle axisTitle" v-if="xAxisTitle !== null">
+          {{ this.xAxisTitle }}
+        </div>
+        <div class="yAxisTitle axisTitle" v-if="yAxisTitle !== null">
+          {{ this.yAxisTitle }}
+        </div>
         <svg id="yAxisViewport">
           <g ref="yAxis" class="yaxis axis" transform="translate(50, 0)" />
         </svg>
         <svg id="chartSVG" ref="chartSVG">
           <g ref="chartGroup">
-            <g ref="plotArea" transform="translate(0,0)" /> 
+            <g ref="plotArea" transform="translate(0,0)" />
             <g ref="plotLegend" />
           </g>
         </svg>
@@ -19,7 +27,9 @@
           <g ref="xAxis" class="xaxis axis" />
         </svg>
       </div>
-      <div id="comment"><b>{{this.commentTitle}}</b> - {{this.comment}}</div>
+      <div id="comment">
+        <b>{{ this.commentTitle }}</b> - {{ this.comment }}
+      </div>
     </div>
   </div>
 </template>
@@ -27,7 +37,6 @@
 <script>
 import LinechartCore from "../js/core_linechart.js";
 import * as moment from "moment";
-import * as d3 from "d3";
 
 export default {
   name: "Linechart",
@@ -50,30 +59,33 @@ export default {
     return {};
   },
   methods: {
-    convert: function(datum, type){
-      if(type ==='Q' || type ==='N'){
-        return datum
-      }else if(type === 'T'){
-        return moment(parseInt(datum))
+    convert: function(datum, type) {
+      if (type === "Q" || type === "N") {
+        return datum;
+      } else if (type === "T") {
+        return moment(parseInt(datum));
       }
     },
     transformData: function(data) {
+      const _this = this
       /**
        *   transformData needs to be changed according to the structure of the data.
        *   output data format is [{color: 'xx', x: 'xx',y: 'xx'},...]
        **/
-
+      
       // [ {color:A, x:v, y:v}, {color:A, x:v, y:v},  ...]
-      const vizData = data.map(function(d){})
-
-
-
+      const vizData = data.map(function(d) {
+        return {
+          x: _this.convert(d[_this.binding.x], _this.binding.xType),
+          y: _this.convert(d[_this.binding.y], _this.binding.yType),
+          color: _this.convert(d[_this.binding.color], _this.binding.colorType)
+        };
+      });
       return vizData;
     }
   }
 };
 </script>
-
 
 <style>
 .axisTitle {

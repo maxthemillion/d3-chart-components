@@ -130,16 +130,21 @@ export default {
     drawPlot: function () {
       const _this = this
 
+      let lineData = d3.nest()
+        .key(function(d){return d.color})
+        .rollup(function(l){return l.map(d => {return {y: d.y, x:d.x}})})
+        .entries(this.vizData)
+      
       this.select.lines = this.select.plotArea
         .append("g")
         .selectAll("g")
-        .data(this.vizData)
+        .data(lineData)
         .join("g");
 
       this.select.path = this.select.lines.append("path")
         .attr("fill", "none")
         .attr("class", "line")
-        .attr("stroke", d => this.color(d[0].color))
+        .attr("stroke", d => this.color(d.key))
         .attr("stroke-width", 2)
         .attr("stroke-linejoin", "round")
         .attr("stroke-linecap", "round")
@@ -151,8 +156,6 @@ export default {
       
       const _this = this
 
-      // Find example here: https://observablehq.com/@d3/multi-line-chart
-      // TODO: highlight line that is closest to cursor
       if ("ontouchstart" in document) svg
           .style("-webkit-tap-highlight-color", "transparent")
           .on("touchstart", entered)
@@ -161,12 +164,6 @@ export default {
           .on("mouseenter", entered)
           .on("mouseleave", left)
           .on("mousemove", moved);
-      
-      path.
-        on("mouseover", function () {
-          emphasize(this);
-        })
-        .on("mouseout", equalize);
       
       const dot = svg.append("g")
         .attr("display", "none");
@@ -184,18 +181,12 @@ export default {
         d3.selectAll(".line")
           .transition()
           .style("opacity", 0.3);
+        dot.attr("display", null);
       }
 
       function moved() {
 
-        // eslint-disable-next-line no-debugger
-        debugger;
-
         d3.event.preventDefault();
-        dot.attr("display", "true");
-
-        //let domainX =_this.scale.x.invert(d3.event.layerX)
-        //let domainY =_this.scale.y.invert(d3.event.layerY)
 
         let series = d3.nest()
           .key(function(d){return d.color})
@@ -204,36 +195,24 @@ export default {
 
         let unique_x = [...new Set(_this.vizData.map(d => d.x))];
 
-
         const ym = _this.scale.y.invert(d3.event.layerY);
         const xm = _this.scale.x.invert(d3.event.layerX);
         const i1 = d3.bisectLeft(unique_x, xm, 1);
         const i0 = i1 - 1;
         const i = xm - unique_x[i0] > unique_x[i1] - xm ? i1 : i0;
         const s = d3.least(series, d => Math.abs(d.value[i] - ym));
-        path.attr("stroke", d => d === s ? null : "#ddd").filter(d => d === s).raise();
+        path.style("opacity", d => d.key === s.key ? 1 : 0.3)
         dot.attr("transform", `translate(${_this.scale.x(unique_x[i])},${_this.scale.y(s.value[i])})`);
         dot.select("text").text(s.key);
-
       }
     
       function left() {
         d3.selectAll(".line")
           .transition()
           .style("opacity", 1);
+          
+        dot.attr('display', 'none')
         }
-
-      function emphasize(hoverNode) {
-        d3.select(hoverNode)
-        .transition()
-        .style("opacity", 1);
-        }
-
-      function equalize() {
-        d3.selectAll(".line")
-          .transition()
-          .style("opacity", 0.3);
-      }
     },
     appendAnnotations: function () {
       if (this.annotations === null) { return }
@@ -241,16 +220,21 @@ export default {
       const c = Vue.extend(AnnotationMarker)
       const _this = this
 
-      const m = d3.map(this.vizData[0], d => d.x)
+      const m = d3.nest()
+        .key(function(d){return d.color})
+        .rollup(function(l){return l.map(d => d.y)})
+        .entries(this.vizData)
+
       // I index 0 here because the data is grouped in order to display multiple graphs in one chart
       // Future implementation should consider indexing by group name and providing a group to props
       // such that the annotations are bound to the correct group, not just the first one.
 
       this.annotations.forEach(function (a) {
+        let d = m[a.subgroup]
         let instance = new c({ 
           propsData: { 
             xPos: _this.scale.x(a.x), 
-            yPos: _this.scale.y(m['$'+a.x].y),
+            yPos: _this.scale.y(d['$'+a.x].y),
             text: a.text } })
         instance.$mount()
         _this.select.plotArea.node().appendChild(instance.$el)
@@ -265,7 +249,7 @@ export default {
         .x(d => _this.scale.x(d.x))
         .y(d => _this.scale.y(d.y));
 
-      this.select.path.attr("d", valueline)
+      this.select.path.attr("d", d => valueline(d.value))
     },
     updateAxes: function () {
       this.axis.x = d3

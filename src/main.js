@@ -45,10 +45,10 @@ let opts_dateX = {
   yAxisTitle: null,
   colorScheme: d3.schemeTableau10,
   annotations: [
-    {x: moment('2017-05-09'), text:'Trump fires James Comey'},
-    {x: moment('2017-05-31'), text:'Trump tweets "covfefe"'},
-    {x: moment('2017-10-04'), text:'Trump throws paper towel at Puerto Ricans'},
-    {x: moment('2019-09-01'), text:'Trump fires ambassador to Ukraine'},
+    {x: moment('2017-05-09'), text:'Trump fires James Comey', subgroup: null},
+    {x: moment('2017-05-31'), text:'Trump tweets "covfefe"', subgroup: null},
+    {x: moment('2017-10-04'), text:'Trump throws paper towel at Puerto Ricans', subgroup: null},
+    {x: moment('2019-09-01'), text:'Trump fires ambassador to Ukraine', subgroup: null},
   ]
 }
 
