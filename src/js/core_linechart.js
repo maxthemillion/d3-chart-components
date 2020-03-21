@@ -204,13 +204,10 @@ export default {
       const _this = this;
       //const path = lines.selectAll('path')
 
-      if ("ontouchstart" in document)
         svg
-          .style("-webkit-tap-highlight-color", "transparent")
           .on("touchstart", entered)
-          .on("touchend", left);
-      else
-        svg
+          .on("touchmove", moved)
+          .on("touchend", left)
           .on("mouseenter", entered)
           .on("mouseleave", left)
           .on("mousemove", moved);
@@ -252,9 +249,19 @@ export default {
           .entries(_this.vizData);
 
         let unique_x = [...new Set(_this.vizData.map(d => d.x))];
+        
+        let pos
+        if ("ontouchstart" in document)
+          {
+            pos = d3.touches(_this.select.plotArea.node())[0]
+          }
+        else
+          {
+            pos = d3.mouse(_this.select.plotArea.node())
+          }
 
-        const ym = _this.scale.y.invert(d3.mouse(_this.select.plotArea.node())[1]);
-        const xm = _this.scale.x.invert(d3.mouse(_this.select.plotArea.node())[0]);
+        const xm = _this.scale.x.invert(pos[0]);
+        const ym = _this.scale.y.invert(pos[1]);
         const i1 = d3.bisectLeft(unique_x, xm, 1);
         const i0 = i1 - 1;
         const i = xm - unique_x[i0] > unique_x[i1] - xm ? i1 : i0;
