@@ -52,17 +52,25 @@ export default {
       scale: {},
       rawData: {},
       vizData: {},
-      zoom: {}
+      zoom: {},
+      layout: {
+        yaxis:{
+          tickToRightThreshold: 500
+        },
+        line:{
+          standardColor: "#bfbfbf",
+          strokeWidth: 1.5
+        },
+        legend:{
+          standardColor: "#737373",
+          fontSize: 11
+        }
+      },
     };
   },
   watch: {},
   methods: {
-    setUp: function() {
-      this.setReferences();
-      this.setDomain();
-      this.setScales();
-    },
-    setReferences: function() {
+    setReferences() {
       this.select.svg = d3.select(this.$refs.chartSVG);
       this.select.chartGroup = d3.select(this.$refs.chartGroup);
       this.select.xAxis = d3.select(this.$refs.xAxis);
@@ -70,7 +78,7 @@ export default {
       this.select.plotArea = d3.select(this.$refs.plotArea);
       this.select.plotLegend = d3.select(this.$refs.plotLegend);
     },
-    setDomain: function() {
+    setDomain() {
       const _this = this;
 
       if (this.xDomain !== null) {
@@ -96,7 +104,7 @@ export default {
         this.domain.y.min = d3.min(this.rawData, d => d[_this.binding.y]);
       }
     },
-    setScales: function() {
+    setScales() {
       this.color = d3.scaleOrdinal(this.colorScheme);
 
       this.plotWidth = this.select.svg.node().getBoundingClientRect().width;
@@ -136,16 +144,15 @@ export default {
         );
 
         const bBox = _this.select.plotArea.node().getBBox();
-        const margin = 0;
-        const topLeft = [bBox.x - margin, bBox.y - margin];
+        const topLeft = [bBox.x, bBox.y];
         const bottomRight = [
-          bBox.x + bBox.width + margin,
-          bBox.y + bBox.height + margin
+          bBox.x + bBox.width,
+          bBox.y + bBox.height
         ];
         _this.zoom.translateExtent([topLeft, bottomRight]);
       }
     },
-    drawPlot: function() {
+    appendPlotElements: function() {
       const _this = this;
 
       let lineData = d3
@@ -174,30 +181,21 @@ export default {
           return _this.colorHighlight === null ||
             _this.colorHighlight.indexOf(d.key) > -1
             ? _this.color(d.key)
-            : "#bfbfbf";
+            : _this.layout.line.standardColor;
         })
-        .attr("stroke-width", 1.5)
+        .attr("stroke-width", _this.layout.line.strokeWidth)
         .attr("stroke-linejoin", "round")
         .attr("stroke-linecap", "round");
 
       this.select.lines
         .append("text")
         .text(d => d.key)
-        .attr("transform", function(d) {
-          return (
-            "translate(" +
-            _this.scale.x(Math.max(...d.value.map(d => d.x)) * 1.01) +
-            "," +
-            _this.scale.y(d.value.map(d => d.y).slice(-1)[0]) +
-            ")"
-          );
-        })
-        .attr("font-size", 11)
+        .attr("font-size", this.layout.legend.fontSize)
         .attr("fill", function(d) {
           return _this.colorHighlight === null ||
             _this.colorHighlight.indexOf(d.key) > -1
             ? _this.color(d.key)
-            : "#737373";
+            : _this.layout.legend.standardColor;
         });
 
       this.select.svg.call(_this.hover, _this.select.lines);
@@ -315,16 +313,26 @@ export default {
         _this.select.plotArea.node().appendChild(instance.$el);
       });
     },
-    updateLine: function() {
+    positionPlotElements: function() {
       const _this = this;
 
       const valueline = d3
         .line()
         .curve(d3.curveLinear)
-        .x(d => _this.scale.x(d.x))
-        .y(d => _this.scale.y(d.y));
+        .x(d => this.scale.x(d.x))
+        .y(d => this.scale.y(d.y));
 
       this.select.path.attr("d", d => valueline(d.value));
+      this.select.lines.selectAll('text')
+      .attr("transform", function(d) {
+        return (
+          "translate(" +
+          _this.scale.x(Math.max(...d.value.map(d => d.x)) * 1.01) +
+          "," +
+          _this.scale.y(d.value.map(d => d.y).slice(-1)[0]) +
+          ")"
+        );
+      })
     },
     updateAxes: function() {
       this.axis.x = d3.axisBottom(this.scale.x);
@@ -335,7 +343,7 @@ export default {
           .tickFormat(d3.timeFormat("%d %B %y"));
       }
 
-      if (this.plotWidth < 500) {
+      if (this.plotWidth < this.layout.yaxis.tickToRightThreshold) {
         this.axis.y = d3.axisRight(this.scale.y);
       } else {
         this.axis.y = d3.axisLeft(this.scale.y);
@@ -353,7 +361,7 @@ export default {
     handleResize: function() {
       this.setScales();
       this.updateAxes();
-      this.updateLine();
+      this.positionPlotElements();
     }
   },
 
@@ -365,10 +373,12 @@ export default {
       _this.rawData =
         _this.binding.xType === "T" ? _this.parseDateStrings(data) : data;
       _this.vizData = _this.transformData(_this.rawData);
-      _this.setUp();
-      _this.drawPlot();
+      _this.setReferences();
+      _this.setDomain();
+      _this.setScales();
+      _this.appendPlotElements();
       _this.appendAnnotations();
-      _this.updateLine();
+      _this.positionPlotElements();
       _this.updateAxes();
       _this.setZoom();
       _window.addEventListener("resize", _this.handleResize);
