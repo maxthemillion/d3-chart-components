@@ -20,9 +20,10 @@ let opts_quantitativeX = {
     color: "country",
     colorType:"N"
   },
-  xAxisTitle: "Time in office",
+  xAxisTitle: "Days since 100th case",
   yAxisTitle: null,
-  colorScheme: d3.schemeTableau10,
+  colorScheme: ['skyblue'],
+  colorHighlight: ['Germany', 'Italy'],
   annotations: []
 }
 

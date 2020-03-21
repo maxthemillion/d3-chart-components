@@ -68,10 +68,6 @@ export default {
     },
     transformData: function(data) {
       const _this = this
-      /**
-       *   transformData needs to be changed according to the structure of the data.
-       *   output data format is [{color: 'xx', x: 'xx',y: 'xx'},...]
-       **/
       
       // [ {color:A, x:v, y:v}, {color:A, x:v, y:v},  ...]
       const vizData = data.map(function(d) {

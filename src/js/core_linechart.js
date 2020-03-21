@@ -1,4 +1,5 @@
 import * as d3 from "d3";
+import { least } from "d3-array";
 import * as moment from "moment";
 import Vue from 'vue'
 import AnnotationMarker from '../components/AnnotationMarker.vue'
@@ -25,9 +26,15 @@ export default {
     dataURL: String,
     binding: Object,
     colorScheme: {
-      type: d3.colorScheme,
+      type: Array,
       default: function () {
-        return d3.schemeBlues;
+        return d3.schemeBlues[8];
+      }
+    },
+    colorHighlight:{
+      type: Array,
+      default: function(){
+        return null
       }
     },
     annotations: {
@@ -105,17 +112,17 @@ export default {
 
       this.scale.x = this.scale.x
         .range([0, this.plotWidth])
-        .domain([this.domain.x.min, this.domain.x.max]);
+        .domain([this.domain.x.min, this.domain.x.max*1.1]);
 
       this.scale.y = d3
         .scaleLinear()
         .range([this.plotHeight, 0])
-        .domain([this.domain.y.min, this.domain.y.max]);
+        .domain([this.domain.y.min, this.domain.y.max*1.1]);
     },
     setZoom() {
       this.zoom = d3
         .zoom()
-        .scaleExtent([1 / 2, 4])
+        .scaleExtent([1, 2])
         .on("zoom", zoomed);
       this.select.svg.call(this.zoom);
 
@@ -125,6 +132,15 @@ export default {
         _this.select.plotArea.attr("transform", d3.event.transform);
         _this.select.xAxis.call(_this.axis.x.scale(d3.event.transform.rescaleX(_this.scale.x)));
         _this.select.yAxis.call(_this.axis.y.scale(d3.event.transform.rescaleY(_this.scale.y)));
+        
+        const bBox = _this.select.plotArea.node().getBBox()
+        const margin = 0
+        const topLeft = [bBox.x - margin, bBox.y - margin]
+        const bottomRight = [
+          bBox.x + bBox.width + margin,
+          bBox.y + bBox.height + margin
+        ]
+        _this.zoom.translateExtent([topLeft, bottomRight])
       }
     },
     drawPlot: function () {
@@ -144,13 +160,23 @@ export default {
       this.select.path = this.select.lines.append("path")
         .attr("fill", "none")
         .attr("class", "line")
-        .attr("stroke", d => this.color(d.key))
-        .attr("stroke-width", 2)
+        .attr('stroke', function(d){
+          return ((_this.colorHighlight === null || _this.colorHighlight.indexOf(d.key)>-1) ?_this.color(d.key) : '#ddd')
+        })
+        .attr("stroke-width", 1.5)
         .attr("stroke-linejoin", "round")
         .attr("stroke-linecap", "round")
-      
-      this.select.svg.call(_this.hover, _this.select.path)
 
+        this.select.lines
+        .append('text').text(d => d.key)
+          .attr("transform", function(d){
+            return 'translate('
+            +_this.scale.x(Math.max(...d.value.map(d=>d.x))*1.01)+','
+            +_this.scale.y(d.value.map(d=>d.y).slice(-1)[0])+')'
+          })
+          .attr("font-size", 10)
+
+      this.select.svg.call(_this.hover, _this.select.path)
     },
     hover(svg, path) {
       
@@ -165,7 +191,7 @@ export default {
           .on("mouseleave", left)
           .on("mousemove", moved);
       
-      const dot = svg.append("g")
+      const dot = this.select.plotArea.append("g")
         .attr("display", "none");
 
       dot.append("circle")
@@ -181,6 +207,7 @@ export default {
         d3.selectAll(".line")
           .transition()
           .style("opacity", 0.3);
+                
         dot.attr("display", null);
       }
 
@@ -200,10 +227,12 @@ export default {
         const i1 = d3.bisectLeft(unique_x, xm, 1);
         const i0 = i1 - 1;
         const i = xm - unique_x[i0] > unique_x[i1] - xm ? i1 : i0;
-        const s = d3.least(series, d => Math.abs(d.value[i] - ym));
+        const s = least(series, d => Math.abs(d.value[i] - ym));
         path.style("opacity", d => d.key === s.key ? 1 : 0.3)
-        dot.attr("transform", `translate(${_this.scale.x(unique_x[i])},${_this.scale.y(s.value[i])})`);
-        dot.select("text").text(s.key);
+        dot.transition()
+          .duration(15)
+          .attr("transform", `translate(${_this.scale.x(unique_x[i])},${_this.scale.y(s.value[i])})`);
+        dot.select("text").text(Math.round(s.value[i]*1000)/1000);
       }
     
       function left() {
@@ -224,10 +253,6 @@ export default {
         .key(function(d){return d.color})
         .rollup(function(l){return l.map(d => d.y)})
         .entries(this.vizData)
-
-      // I index 0 here because the data is grouped in order to display multiple graphs in one chart
-      // Future implementation should consider indexing by group name and providing a group to props
-      // such that the annotations are bound to the correct group, not just the first one.
 
       this.annotations.forEach(function (a) {
         let d = m[a.subgroup]
@@ -254,8 +279,12 @@ export default {
     updateAxes: function () {
       this.axis.x = d3
         .axisBottom(this.scale.x)
-        .ticks(d3.timeMonth.every(6))
-        .tickFormat(d3.timeFormat("%d %B %y"));
+      
+      if(this.binding.xType === 'T'){
+        this.axis.x
+          .ticks(d3.timeMonth.every(6))
+          .tickFormat(d3.timeFormat("%d %B %y"));
+      }
 
       if (this.plotWidth < 500) {
         this.axis.y = d3.axisRight(this.scale.y)
@@ -283,11 +312,8 @@ export default {
     const _this = this;
     const _window = window;
     d3.csv(this.dataURL, d3.autoType).then(function (data) {
-      if(_this.binding.xType==='T'){
-        _this.rawData = _this.parseDateStrings(data)
-      }else{
-        _this.rawData = data
-      }
+      // TODO: how can input parsing be handled for all x, y and color?
+      _this.rawData = _this.binding.xType==='T' ? _this.parseDateStrings(data) : data
       _this.vizData = _this.transformData(_this.rawData);
       _this.setUp();
       _this.drawPlot();
