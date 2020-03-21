@@ -1,15 +1,15 @@
 import * as d3 from "d3";
 import { least } from "d3-array";
 import * as moment from "moment";
-import Vue from 'vue'
-import AnnotationMarker from '../components/AnnotationMarker.vue'
+import Vue from "vue";
+import AnnotationMarker from "../components/AnnotationMarker.vue";
 
 export default {
   name: "LinechartCore",
   props: {
     xDomain: {
       type: Array,
-      default: function () {
+      default: function() {
         return null; //TODO: it doesn't work to set the xDomain yet. Seems to be some problem with scales
       }
     },
@@ -19,7 +19,7 @@ export default {
     },
     yDomain: {
       type: Array,
-      default: function () {
+      default: function() {
         return null;
       }
     },
@@ -27,20 +27,20 @@ export default {
     binding: Object,
     colorScheme: {
       type: Array,
-      default: function () {
+      default: function() {
         return d3.schemeBlues[8];
       }
     },
-    colorHighlight:{
+    colorHighlight: {
       type: Array,
-      default: function(){
-        return null
+      default: function() {
+        return null;
       }
     },
     annotations: {
       type: Array,
-      default: function () {
-        return null
+      default: function() {
+        return null;
       }
     }
   },
@@ -57,12 +57,12 @@ export default {
   },
   watch: {},
   methods: {
-    setUp: function () {
+    setUp: function() {
       this.setReferences();
       this.setDomain();
       this.setScales();
     },
-    setReferences: function () {
+    setReferences: function() {
       this.select.svg = d3.select(this.$refs.chartSVG);
       this.select.chartGroup = d3.select(this.$refs.chartGroup);
       this.select.xAxis = d3.select(this.$refs.xAxis);
@@ -70,7 +70,7 @@ export default {
       this.select.plotArea = d3.select(this.$refs.plotArea);
       this.select.plotLegend = d3.select(this.$refs.plotLegend);
     },
-    setDomain: function () {
+    setDomain: function() {
       const _this = this;
 
       if (this.xDomain !== null) {
@@ -96,28 +96,26 @@ export default {
         this.domain.y.min = d3.min(this.rawData, d => d[_this.binding.y]);
       }
     },
-    setScales: function () {
+    setScales: function() {
       this.color = d3.scaleOrdinal(this.colorScheme);
 
-      this.plotWidth = this.select.svg.node().getBoundingClientRect().width
-      this.plotHeight = this.select.svg.node().getBoundingClientRect().height
+      this.plotWidth = this.select.svg.node().getBoundingClientRect().width;
+      this.plotHeight = this.select.svg.node().getBoundingClientRect().height;
 
-      if(this.binding.xType === 'T'){
-        this.scale.x = d3
-          .scaleTime()
-      }else if(this.binding.xType === 'Q'){
-        this.scale.x = d3
-          .scaleLinear()
+      if (this.binding.xType === "T") {
+        this.scale.x = d3.scaleTime();
+      } else if (this.binding.xType === "Q") {
+        this.scale.x = d3.scaleLinear();
       }
 
       this.scale.x = this.scale.x
         .range([0, this.plotWidth])
-        .domain([this.domain.x.min, this.domain.x.max*1.1]);
+        .domain([this.domain.x.min, this.domain.x.max * 1.1]);
 
       this.scale.y = d3
         .scaleLinear()
         .range([this.plotHeight, 0])
-        .domain([this.domain.y.min, this.domain.y.max*1.1]);
+        .domain([this.domain.y.min, this.domain.y.max * 1.1]);
     },
     setZoom() {
       this.zoom = d3
@@ -130,95 +128,130 @@ export default {
 
       function zoomed() {
         _this.select.plotArea.attr("transform", d3.event.transform);
-        _this.select.xAxis.call(_this.axis.x.scale(d3.event.transform.rescaleX(_this.scale.x)));
-        _this.select.yAxis.call(_this.axis.y.scale(d3.event.transform.rescaleY(_this.scale.y)));
-        
-        const bBox = _this.select.plotArea.node().getBBox()
-        const margin = 0
-        const topLeft = [bBox.x - margin, bBox.y - margin]
+        _this.select.xAxis.call(
+          _this.axis.x.scale(d3.event.transform.rescaleX(_this.scale.x))
+        );
+        _this.select.yAxis.call(
+          _this.axis.y.scale(d3.event.transform.rescaleY(_this.scale.y))
+        );
+
+        const bBox = _this.select.plotArea.node().getBBox();
+        const margin = 0;
+        const topLeft = [bBox.x - margin, bBox.y - margin];
         const bottomRight = [
           bBox.x + bBox.width + margin,
           bBox.y + bBox.height + margin
-        ]
-        _this.zoom.translateExtent([topLeft, bottomRight])
+        ];
+        _this.zoom.translateExtent([topLeft, bottomRight]);
       }
     },
-    drawPlot: function () {
-      const _this = this
+    drawPlot: function() {
+      const _this = this;
 
-      let lineData = d3.nest()
-        .key(function(d){return d.color})
-        .rollup(function(l){return l.map(d => {return {y: d.y, x:d.x}})})
-        .entries(this.vizData)
-      
+      let lineData = d3
+        .nest()
+        .key(function(d) {
+          return d.color;
+        })
+        .rollup(function(l) {
+          return l.map(d => {
+            return { y: d.y, x: d.x };
+          });
+        })
+        .entries(this.vizData);
+
       this.select.lines = this.select.plotArea
         .append("g")
         .selectAll("g")
         .data(lineData)
         .join("g");
 
-      this.select.path = this.select.lines.append("path")
+      this.select.path = this.select.lines
+        .append("path")
         .attr("fill", "none")
         .attr("class", "line")
-        .attr('stroke', function(d){
-          return ((_this.colorHighlight === null || _this.colorHighlight.indexOf(d.key)>-1) ?_this.color(d.key) : '#ddd')
+        .attr("stroke", function(d) {
+          return _this.colorHighlight === null ||
+            _this.colorHighlight.indexOf(d.key) > -1
+            ? _this.color(d.key)
+            : "#bfbfbf";
         })
         .attr("stroke-width", 1.5)
         .attr("stroke-linejoin", "round")
-        .attr("stroke-linecap", "round")
+        .attr("stroke-linecap", "round");
 
-        this.select.lines
-        .append('text').text(d => d.key)
-          .attr("transform", function(d){
-            return 'translate('
-            +_this.scale.x(Math.max(...d.value.map(d=>d.x))*1.01)+','
-            +_this.scale.y(d.value.map(d=>d.y).slice(-1)[0])+')'
-          })
-          .attr("font-size", 10)
+      this.select.lines
+        .append("text")
+        .text(d => d.key)
+        .attr("transform", function(d) {
+          return (
+            "translate(" +
+            _this.scale.x(Math.max(...d.value.map(d => d.x)) * 1.01) +
+            "," +
+            _this.scale.y(d.value.map(d => d.y).slice(-1)[0]) +
+            ")"
+          );
+        })
+        .attr("font-size", 11)
+        .attr("fill", function(d) {
+          return _this.colorHighlight === null ||
+            _this.colorHighlight.indexOf(d.key) > -1
+            ? _this.color(d.key)
+            : "#737373";
+        });
 
-      this.select.svg.call(_this.hover, _this.select.path)
+      this.select.svg.call(_this.hover, _this.select.lines);
     },
-    hover(svg, path) {
-      
-      const _this = this
+    hover(svg, lines) {
+      const _this = this;
+      //const path = lines.selectAll('path')
 
-      if ("ontouchstart" in document) svg
+      if ("ontouchstart" in document)
+        svg
           .style("-webkit-tap-highlight-color", "transparent")
           .on("touchstart", entered)
-          .on("touchend", left)
-      else svg
+          .on("touchend", left);
+      else
+        svg
           .on("mouseenter", entered)
           .on("mouseleave", left)
           .on("mousemove", moved);
-      
-      const dot = this.select.plotArea.append("g")
-        .attr("display", "none");
 
-      dot.append("circle")
+      const dot = this.select.plotArea
+        .append("g")
+        .attr("display", "none")
+      
+      dot
+        .append("circle")
         .attr("r", 2.5);
-  
-      dot.append("text")
+
+      dot
+        .append("text")
         .attr("font-family", "sans-serif")
         .attr("font-size", 10)
         .attr("text-anchor", "middle")
         .attr("y", -8);
 
       function entered() {
-        d3.selectAll(".line")
+        lines          
           .transition()
           .style("opacity", 0.3);
-                
+
         dot.attr("display", null);
       }
 
       function moved() {
-
         d3.event.preventDefault();
 
-        let series = d3.nest()
-          .key(function(d){return d.color})
-          .rollup(function(l){return l.map(d => d.y)})
-          .entries(_this.vizData)
+        let series = d3
+          .nest()
+          .key(function(d) {
+            return d.color;
+          })
+          .rollup(function(l) {
+            return l.map(d => d.y);
+          })
+          .entries(_this.vizData);
 
         let unique_x = [...new Set(_this.vizData.map(d => d.x))];
 
@@ -228,44 +261,61 @@ export default {
         const i0 = i1 - 1;
         const i = xm - unique_x[i0] > unique_x[i1] - xm ? i1 : i0;
         const s = least(series, d => Math.abs(d.value[i] - ym));
-        path.style("opacity", d => d.key === s.key ? 1 : 0.3)
-        dot.transition()
+
+        lines.style("opacity", d => (d.key === s.key ? 1 : 0.3));
+
+        dot
+          .transition()
           .duration(15)
-          .attr("transform", `translate(${_this.scale.x(unique_x[i])},${_this.scale.y(s.value[i])})`);
-        dot.select("text").text(Math.round(s.value[i]*1000)/1000);
+          .attr(
+            "transform",
+            `translate(${_this.scale.x(unique_x[i])},${_this.scale.y(
+              s.value[i]
+            )})`
+          );
+        dot.select("text").text(Math.round(s.value[i] * 1000) / 1000);
       }
-    
+
       function left() {
-        d3.selectAll(".line")
+        lines
           .transition()
           .style("opacity", 1);
-          
-        dot.attr('display', 'none')
-        }
+
+        dot.attr("display", "none");
+      }
     },
-    appendAnnotations: function () {
-      if (this.annotations === null) { return }
+    appendAnnotations: function() {
+      if (this.annotations === null) {
+        return;
+      }
 
-      const c = Vue.extend(AnnotationMarker)
-      const _this = this
+      const c = Vue.extend(AnnotationMarker);
+      const _this = this;
 
-      const m = d3.nest()
-        .key(function(d){return d.color})
-        .rollup(function(l){return l.map(d => d.y)})
-        .entries(this.vizData)
+      const m = d3
+        .nest()
+        .key(function(d) {
+          return d.color;
+        })
+        .rollup(function(l) {
+          return l.map(d => d.y);
+        })
+        .entries(this.vizData);
 
-      this.annotations.forEach(function (a) {
-        let d = m[a.subgroup]
-        let instance = new c({ 
-          propsData: { 
-            xPos: _this.scale.x(a.x), 
-            yPos: _this.scale.y(d['$'+a.x].y),
-            text: a.text } })
-        instance.$mount()
-        _this.select.plotArea.node().appendChild(instance.$el)
-      })
+      this.annotations.forEach(function(a) {
+        let d = m[a.subgroup];
+        let instance = new c({
+          propsData: {
+            xPos: _this.scale.x(a.x),
+            yPos: _this.scale.y(d["$" + a.x].y),
+            text: a.text
+          }
+        });
+        instance.$mount();
+        _this.select.plotArea.node().appendChild(instance.$el);
+      });
     },
-    updateLine: function () {
+    updateLine: function() {
       const _this = this;
 
       const valueline = d3
@@ -274,34 +324,33 @@ export default {
         .x(d => _this.scale.x(d.x))
         .y(d => _this.scale.y(d.y));
 
-      this.select.path.attr("d", d => valueline(d.value))
+      this.select.path.attr("d", d => valueline(d.value));
     },
-    updateAxes: function () {
-      this.axis.x = d3
-        .axisBottom(this.scale.x)
-      
-      if(this.binding.xType === 'T'){
+    updateAxes: function() {
+      this.axis.x = d3.axisBottom(this.scale.x);
+
+      if (this.binding.xType === "T") {
         this.axis.x
           .ticks(d3.timeMonth.every(6))
           .tickFormat(d3.timeFormat("%d %B %y"));
       }
 
       if (this.plotWidth < 500) {
-        this.axis.y = d3.axisRight(this.scale.y)
+        this.axis.y = d3.axisRight(this.scale.y);
       } else {
-        this.axis.y = d3.axisLeft(this.scale.y)
+        this.axis.y = d3.axisLeft(this.scale.y);
       }
       this.select.xAxis.call(this.axis.x);
       this.select.yAxis.call(this.axis.y);
     },
-    parseDateStrings: function (data) {
+    parseDateStrings: function(data) {
       const _this = this;
-      data.forEach(function (d) {
+      data.forEach(function(d) {
         d[_this.binding.x] = moment(d[_this.binding.x], "MM/DD/YYYY");
       });
       return data;
     },
-    handleResize: function () {
+    handleResize: function() {
       this.setScales();
       this.updateAxes();
       this.updateLine();
@@ -311,9 +360,10 @@ export default {
   mounted() {
     const _this = this;
     const _window = window;
-    d3.csv(this.dataURL, d3.autoType).then(function (data) {
+    d3.csv(this.dataURL, d3.autoType).then(function(data) {
       // TODO: how can input parsing be handled for all x, y and color?
-      _this.rawData = _this.binding.xType==='T' ? _this.parseDateStrings(data) : data
+      _this.rawData =
+        _this.binding.xType === "T" ? _this.parseDateStrings(data) : data;
       _this.vizData = _this.transformData(_this.rawData);
       _this.setUp();
       _this.drawPlot();
@@ -321,7 +371,7 @@ export default {
       _this.updateLine();
       _this.updateAxes();
       _this.setZoom();
-      _window.addEventListener('resize', _this.handleResize)
+      _window.addEventListener("resize", _this.handleResize);
     });
-  },
+  }
 };

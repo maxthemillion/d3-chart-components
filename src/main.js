@@ -22,7 +22,7 @@ let opts_quantitativeX = {
   },
   xAxisTitle: "Days since 100th case",
   yAxisTitle: null,
-  colorScheme: ['skyblue'],
+  colorScheme: ['steelblue'],
   colorHighlight: ['Germany', 'Italy'],
   annotations: []
 }
