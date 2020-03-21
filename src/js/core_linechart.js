@@ -253,8 +253,8 @@ export default {
 
         let unique_x = [...new Set(_this.vizData.map(d => d.x))];
 
-        const ym = _this.scale.y.invert(d3.event.layerY);
-        const xm = _this.scale.x.invert(d3.event.layerX);
+        const ym = _this.scale.y.invert(d3.mouse(_this.select.plotArea.node())[1]);
+        const xm = _this.scale.x.invert(d3.mouse(_this.select.plotArea.node())[0]);
         const i1 = d3.bisectLeft(unique_x, xm, 1);
         const i0 = i1 - 1;
         const i = xm - unique_x[i0] > unique_x[i1] - xm ? i1 : i0;
