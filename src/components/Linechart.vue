@@ -64,6 +64,8 @@ export default {
         return datum;
       } else if (type === "T") {
         return moment(parseInt(datum));
+      } else if (type === "P"){
+        return datum*100
       }
     },
     transformData: function(data) {

@@ -99,9 +99,6 @@ export default {
     },
     setDomain() {
       const _this = this;
-      
-      // eslint-disable-next-line no-debugger
-      debugger;
 
       let xVals = [...new Set(_this.vizData.map(d => d.x))];
       let yVals = [...new Set(_this.vizData.map(d => d.y))];
