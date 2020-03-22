@@ -63,7 +63,7 @@ export default {
       if (type === "Q" || type === "N") {
         return datum;
       } else if (type === "T") {
-        return moment(parseInt(datum));
+        return moment(datum);
       } else if (type === "P"){
         return datum*100
       }

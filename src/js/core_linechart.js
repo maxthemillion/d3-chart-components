@@ -23,6 +23,17 @@ export default {
         return null;
       }
     },
+    formatter:{
+      type: Object,
+      default: function() {
+        return(
+          {
+            y: d3.format('.1f'),
+            x: d3.format('.1f')
+          }
+        )
+      }
+    },
     dataURL: String,
     binding: Object,
     colorScheme: {
@@ -61,7 +72,7 @@ export default {
           hover: true
         };
       }
-    }
+    },
   },
   data() {
     return {
@@ -359,6 +370,11 @@ export default {
       } else {
         this.axis.y = d3.axisLeft(this.scale.y);
       }
+
+      if (this.binding.yType == "P"){
+        this.axis.y.tickFormat(d3.format("%"))
+      }
+
       this.select.xAxis.call(this.axis.x);
       this.select.yAxis.call(this.axis.y);
     },
@@ -381,9 +397,7 @@ export default {
     const _window = window;
     d3.csv(this.dataURL, d3.autoType).then(function(data) {
       // TODO: how can input parsing be handled for all x, y and color?
-      _this.rawData =
-        _this.binding.xType === "T" ? _this.parseDateStrings(data) : data;
-      _this.vizData = _this.transformData(_this.rawData);
+      _this.vizData = _this.transformData(data);
       _this.setReferences();
       _this.setDomain();
       _this.setScales();

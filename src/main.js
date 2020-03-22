@@ -13,8 +13,8 @@ let opts_quantitativeX = {
   commentTitle: "Vast differences in testing procedures",
   comment: "While Germany and South Korea have very low numbers of deaths in confirmed cases, Italy and originally also the US did not. Assuming (almost) equal standards in health treatment across these industrialized countries, the figures may be an indicator on whether countries are undertesting.",
   binding:  { 
-    x: "days_since100", 
-    xType:'Q', 
+    x: "date", 
+    xType:'T', 
     y: "death_rate", 
     yType:'P',
     color: "country",
