@@ -42,6 +42,25 @@ export default {
       default: function() {
         return null;
       }
+    },
+    scale: {
+      type: Object,
+      default: function() {
+        return {
+          x: d3.scaleLinear(),
+          y: d3.scaleLinear(),
+          color: d3.scaleOrdinal(),
+        };
+      },
+    },
+    interactive: {
+      type: Object,
+      default: function() {
+        return {
+          zoom: false,
+          hover: true
+        };
+      }
     }
   },
   data() {
@@ -49,23 +68,23 @@ export default {
       axis: {},
       select: {},
       domain: { x: {}, y: {} },
-      scale: {},
       rawData: {},
       vizData: {},
       zoom: {},
       layout: {
-        yaxis:{
+        yaxis: {
           tickToRightThreshold: 500
         },
-        line:{
+        line: {
           standardColor: "#bfbfbf",
           strokeWidth: 1.5
         },
-        legend:{
+        legend: {
           standardColor: "#737373",
-          fontSize: 11
+          fontSize: 11,
+          unit: '%'
         }
-      },
+      }
     };
   },
   watch: {},
@@ -80,56 +99,57 @@ export default {
     },
     setDomain() {
       const _this = this;
+      
+      // eslint-disable-next-line no-debugger
+      debugger;
+
+      let xVals = [...new Set(_this.vizData.map(d => d.x))];
+      let yVals = [...new Set(_this.vizData.map(d => d.y))];
+
+      let xc
+      let yc
 
       if (this.xDomain !== null) {
-        this.domain.y.max = d3.max(this.xDomain);
-        this.domain.y.min = d3.min(this.xDomain);
+        xc = this.xDomain
       } else {
-        this.domain.x.max = d3.max(this.rawData, d => d[_this.binding.x]);
-        this.domain.x.min = d3.min(this.rawData, d => d[_this.binding.x]);
+        xc = xVals
       }
+      this.domain.x.max = d3.max(xc)
+      this.domain.x.min = d3.min(xc)
 
       if (this.yDomain !== null) {
-        this.domain.y.max = d3.max(this.yDomain);
-        this.domain.y.min = d3.min(this.yDomain);
+        yc = this.yDomain
       } else if (this.yIncludeZero) {
-        this.domain.y.max = d3.max(this.rawData, d =>
-          Math.max(0, d[_this.binding.y])
-        );
-        this.domain.y.min = d3.min(this.rawData, d =>
-          Math.min(0, d[_this.binding.y])
-        );
+        yc = yVals
+        yc.push(0)
       } else {
-        this.domain.y.max = d3.max(this.rawData, d => d[_this.binding.y]);
-        this.domain.y.min = d3.min(this.rawData, d => d[_this.binding.y]);
+        yc=yVals 
       }
+      this.domain.y.max = d3.max(yc)
+      this.domain.y.min = d3.min(yc)
     },
     setScales() {
-      this.color = d3.scaleOrdinal(this.colorScheme);
+      this.scale.color.range(this.colorScheme)
 
       this.plotWidth = this.select.svg.node().getBoundingClientRect().width;
       this.plotHeight = this.select.svg.node().getBoundingClientRect().height;
 
-      if (this.binding.xType === "T") {
-        this.scale.x = d3.scaleTime();
-      } else if (this.binding.xType === "Q") {
-        this.scale.x = d3.scaleLinear();
-      }
-
-      this.scale.x = this.scale.x
+      this.scale.x
         .range([0, this.plotWidth])
-        .domain([this.domain.x.min, this.domain.x.max * 1.1]);
+        .domain([this.domain.x.min, this.domain.x.max * 1.2]);
 
-      this.scale.y = d3
-        .scaleLinear()
+      this.scale.y
         .range([this.plotHeight, 0])
-        .domain([this.domain.y.min, this.domain.y.max * 1.1]);
+        .domain([this.domain.y.min, this.domain.y.max * 1.2]);
     },
     setZoom() {
+      if (!this.interactive.zoom) return;
+
       this.zoom = d3
         .zoom()
         .scaleExtent([1, 2])
         .on("zoom", zoomed);
+
       this.select.svg.call(this.zoom);
 
       const _this = this;
@@ -145,10 +165,7 @@ export default {
 
         const bBox = _this.select.plotArea.node().getBBox();
         const topLeft = [bBox.x, bBox.y];
-        const bottomRight = [
-          bBox.x + bBox.width,
-          bBox.y + bBox.height
-        ];
+        const bottomRight = [bBox.x + bBox.width, bBox.y + bBox.height];
         _this.zoom.translateExtent([topLeft, bottomRight]);
       }
     },
@@ -180,7 +197,7 @@ export default {
         .attr("stroke", function(d) {
           return _this.colorHighlight === null ||
             _this.colorHighlight.indexOf(d.key) > -1
-            ? _this.color(d.key)
+            ? _this.scale.color(d.key)
             : _this.layout.line.standardColor;
         })
         .attr("stroke-width", _this.layout.line.strokeWidth)
@@ -194,31 +211,28 @@ export default {
         .attr("fill", function(d) {
           return _this.colorHighlight === null ||
             _this.colorHighlight.indexOf(d.key) > -1
-            ? _this.color(d.key)
+            ? _this.scale.color(d.key)
             : _this.layout.legend.standardColor;
         });
 
       this.select.svg.call(_this.hover, _this.select.lines);
     },
     hover(svg, lines) {
+      if (!this.interactive.hover) return
+
       const _this = this;
-      //const path = lines.selectAll('path')
 
-        svg
-          .on("touchstart", entered)
-          .on("touchmove", moved)
-          .on("touchend", left)
-          .on("mouseenter", entered)
-          .on("mouseleave", left)
-          .on("mousemove", moved);
+      svg
+        .on("touchstart", entered)
+        .on("touchmove", moved)
+        .on("touchend", left)
+        .on("mouseenter", entered)
+        .on("mouseleave", left)
+        .on("mousemove", moved);
 
-      const dot = this.select.plotArea
-        .append("g")
-        .attr("display", "none")
-      
-      dot
-        .append("circle")
-        .attr("r", 2.5);
+      const dot = this.select.plotArea.append("g").attr("display", "none");
+
+      dot.append("circle").attr("r", 2.5);
 
       dot
         .append("text")
@@ -228,9 +242,7 @@ export default {
         .attr("y", -8);
 
       function entered() {
-        lines          
-          .transition()
-          .style("opacity", 0.3);
+        lines.transition().style("opacity", 0.3);
 
         dot.attr("display", null);
       }
@@ -249,16 +261,13 @@ export default {
           .entries(_this.vizData);
 
         let unique_x = [...new Set(_this.vizData.map(d => d.x))];
-        
-        let pos
-        if ("ontouchstart" in document)
-          {
-            pos = d3.touches(_this.select.plotArea.node())[0]
-          }
-        else
-          {
-            pos = d3.mouse(_this.select.plotArea.node())
-          }
+
+        let pos;
+        if ("ontouchstart" in document) {
+          pos = d3.touches(_this.select.plotArea.node())[0];
+        } else {
+          pos = d3.mouse(_this.select.plotArea.node());
+        }
 
         const xm = _this.scale.x.invert(pos[0]);
         const ym = _this.scale.y.invert(pos[1]);
@@ -278,13 +287,12 @@ export default {
               s.value[i]
             )})`
           );
-        dot.select("text").text(Math.round(s.value[i] * 1000) / 1000);
+
+        dot.select("text").text(Math.round(s.value[i] * 100) / 100 + _this.layout.legend.unit);
       }
 
       function left() {
-        lines
-          .transition()
-          .style("opacity", 1);
+        lines.transition().style("opacity", 1);
 
         dot.attr("display", "none");
       }
@@ -330,8 +338,7 @@ export default {
         .y(d => this.scale.y(d.y));
 
       this.select.path.attr("d", d => valueline(d.value));
-      this.select.lines.selectAll('text')
-      .attr("transform", function(d) {
+      this.select.lines.selectAll("text").attr("transform", function(d) {
         return (
           "translate(" +
           _this.scale.x(Math.max(...d.value.map(d => d.x)) * 1.01) +
@@ -339,7 +346,7 @@ export default {
           _this.scale.y(d.value.map(d => d.y).slice(-1)[0]) +
           ")"
         );
-      })
+      });
     },
     updateAxes: function() {
       this.axis.x = d3.axisBottom(this.scale.x);
@@ -370,7 +377,7 @@ export default {
       this.updateAxes();
       this.positionPlotElements();
     }
-  },
+  },  
 
   mounted() {
     const _this = this;
