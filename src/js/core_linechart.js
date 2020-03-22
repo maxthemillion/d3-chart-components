@@ -1,6 +1,5 @@
 import * as d3 from "d3";
 import { least } from "d3-array";
-import * as moment from "moment";
 import Vue from "vue";
 import AnnotationMarker from "../components/AnnotationMarker.vue";
 
@@ -23,7 +22,7 @@ export default {
         return null;
       }
     },
-    formatter:{
+    format:{
       type: Object,
       default: function() {
         return(
@@ -93,7 +92,6 @@ export default {
         legend: {
           standardColor: "#737373",
           fontSize: 11,
-          unit: '%'
         }
       }
     };
@@ -144,11 +142,13 @@ export default {
 
       this.scale.x
         .range([0, this.plotWidth])
-        .domain([this.domain.x.min, this.domain.x.max * 1.2]);
+        .domain([this.domain.x.min, this.domain.x.max])
+        .nice()
 
       this.scale.y
         .range([this.plotHeight, 0])
-        .domain([this.domain.y.min, this.domain.y.max * 1.2]);
+        .domain([this.domain.y.min, this.domain.y.max])
+        .nice()
     },
     setZoom() {
       if (!this.interactive.zoom) return;
@@ -296,7 +296,7 @@ export default {
             )})`
           );
 
-        dot.select("text").text(Math.round(s.value[i] * 100) / 100 + _this.layout.legend.unit);
+        dot.select("text").text(_this.format.y(s.value[i]));
       }
 
       function left() {
@@ -371,19 +371,10 @@ export default {
         this.axis.y = d3.axisLeft(this.scale.y);
       }
 
-      if (this.binding.yType == "P"){
-        this.axis.y.tickFormat(d3.format("%"))
-      }
+      this.axis.y.tickFormat(this.format.y);
 
       this.select.xAxis.call(this.axis.x);
       this.select.yAxis.call(this.axis.y);
-    },
-    parseDateStrings: function(data) {
-      const _this = this;
-      data.forEach(function(d) {
-        d[_this.binding.x] = moment(d[_this.binding.x], "MM/DD/YYYY");
-      });
-      return data;
     },
     handleResize: function() {
       this.setScales();

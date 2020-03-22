@@ -60,12 +60,10 @@ export default {
   },
   methods: {
     convert: function(datum, type) {
-      if (type === "Q" || type === "N") {
+      if (type === "Q" || type === "N" || type === 'P') {
         return datum;
       } else if (type === "T") {
         return moment(datum);
-      } else if (type === "P"){
-        return datum*100
       }
     },
     transformData: function(data) {
