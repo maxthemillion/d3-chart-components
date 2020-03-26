@@ -1,7 +1,6 @@
 import * as d3 from "d3";
-import { least } from "d3-array";
 import Vue from "vue";
-import AnnotationMarker from "../components/AnnotationMarker.vue";
+import AnnotationMarker from "../AnnotationMarker.vue";
 
 export default {
   name: "LinechartCore",
@@ -72,6 +71,14 @@ export default {
         };
       }
     },
+    tick:{
+      type: Object,
+      default: function() {
+        return ({
+          frequency: null
+        })
+      }
+    }
   },
   data() {
     return {
@@ -258,45 +265,52 @@ export default {
       function moved() {
         d3.event.preventDefault();
 
-        let series = d3
-          .nest()
-          .key(function(d) {
-            return d.color;
-          })
-          .rollup(function(l) {
-            return l.map(d => d.y);
-          })
-          .entries(_this.vizData);
-
-        let unique_x = [...new Set(_this.vizData.map(d => d.x))];
-
         let pos;
         if ("ontouchstart" in document) {
           pos = d3.touches(_this.select.plotArea.node())[0];
         } else {
           pos = d3.mouse(_this.select.plotArea.node());
         }
+        
+        let uniqueX, xPosVal
+        if(_this.binding.xType === 'T'){
+          uniqueX = [...new Set(_this.vizData.map(d => d.x.valueOf()))].sort((a, b) => a - b);
+          xPosVal = _this.scale.x.invert(pos[0]).valueOf();
+        } else {
+          uniqueX = [...new Set(_this.vizData.map(d => d.x))].sort((a, b) => a - b);
+          xPosVal = _this.scale.x.invert(pos[0]);
+        }
+        
+        const yPosVal = _this.scale.y.invert(pos[1]);
+        
+        const ix1 = d3.bisectLeft(uniqueX, xPosVal, 1);
+        const ix0 = ix1 - 1;
+        const ix = xPosVal - uniqueX[ix0] > uniqueX[ix1] - xPosVal ? ix1 : ix0;
+        const xValReal = uniqueX[ix]
 
-        const xm = _this.scale.x.invert(pos[0]);
-        const ym = _this.scale.y.invert(pos[1]);
-        const i1 = d3.bisectLeft(unique_x, xm, 1);
-        const i0 = i1 - 1;
-        const i = xm - unique_x[i0] > unique_x[i1] - xm ? i1 : i0;
-        const s = least(series, d => Math.abs(d.value[i] - ym));
+        let data
+        if(_this.binding.xType === 'T'){
+          data = _this.vizData.filter(d => d.x.valueOf() === xValReal)
+        }else{
+          data = _this.vizData.filter(d => d.x === xValReal)
+        }
 
-        lines.style("opacity", d => (d.key === s.key ? 1 : 0.3));
+        const yDist = data.map(d => Math.abs(d.y - yPosVal))
+        const iy = yDist.indexOf(d3.min(yDist))
+        const yKey = data[iy].color
+        const yValReal = data[iy].y
+
+        lines.style("opacity", d => (d.key === yKey ? 1 : 0.3));
 
         dot
           .transition()
           .duration(15)
           .attr(
             "transform",
-            `translate(${_this.scale.x(unique_x[i])},${_this.scale.y(
-              s.value[i]
-            )})`
+            `translate(${_this.scale.x(xValReal)},${_this.scale.y(yValReal)})`
           );
 
-        dot.select("text").text(_this.format.y(s.value[i]));
+        dot.select("text").text(_this.format.y(yValReal));
       }
 
       function left() {
@@ -349,7 +363,7 @@ export default {
       this.select.lines.selectAll("text").attr("transform", function(d) {
         return (
           "translate(" +
-          _this.scale.x(Math.max(...d.value.map(d => d.x)) * 1.01) +
+          _this.scale.x(Math.max(...d.value.map(d => d.x)))*1.01 +
           "," +
           _this.scale.y(d.value.map(d => d.y).slice(-1)[0]) +
           ")"
@@ -359,11 +373,9 @@ export default {
     updateAxes: function() {
       this.axis.x = d3.axisBottom(this.scale.x);
 
-      if (this.binding.xType === "T") {
-        this.axis.x
-          .ticks(d3.timeMonth.every(6))
-          .tickFormat(d3.timeFormat("%d %B %y"));
-      }
+      this.axis.x
+        .ticks(this.tick.frequency)
+        .tickFormat(this.format.x);
 
       if (this.plotWidth < this.layout.yaxis.tickToRightThreshold) {
         this.axis.y = d3.axisRight(this.scale.y);

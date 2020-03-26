@@ -20,6 +20,13 @@ let opts_timeX = {
     color: "country",
     colorType:"N"
   },
+  format:{
+    y: d3.format('.1%'), 
+    x: d3.timeFormat("%d %B")
+  },
+  tick:{
+    frequency: d3.timeWeek.every(1)
+  },
   scale:{
     x: d3.scaleTime(),
     y: d3.scaleLinear(),
@@ -84,7 +91,5 @@ let opts_dateX = {
 }
 
 new Vue({
-  render: h => h(App, {props:{ opts: opts_quantitativeX}}),
+  render: h => h(App, {props:{ opts: opts_timeX}}),
 }).$mount('#app')
-
-

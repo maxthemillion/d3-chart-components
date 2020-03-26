@@ -1,6 +1,6 @@
 {
   "name": "@maxthemillion/vued3-linechart",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "A vue component that provides a d3.js linechart.",
   "main": "./dist/vue-d3Linechart.js",
   "scripts": {

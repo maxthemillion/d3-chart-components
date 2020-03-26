@@ -35,7 +35,7 @@
 </template>
 
 <script>
-import LinechartCore from "../js/core_linechart.js";
+import LinechartCore from "./linechart.js";
 import * as moment from "moment";
 
 export default {
@@ -52,6 +52,7 @@ export default {
     },
     comment: { type: String, default: "comment" },
     commentTitle: { type: String, default: "comment title" },
+    dateFormat: {type: String, default: "YYYY-MM-DD"},
     xAxisTitle: { type: String, default: "xAxis" },
     yAxisTitle: { type: String, default: "yAxis" }
   },
@@ -63,7 +64,7 @@ export default {
       if (type === "Q" || type === "N" || type === 'P') {
         return datum;
       } else if (type === "T") {
-        return moment(datum);
+        return moment(datum, this.dateFormat);
       }
     },
     transformData: function(data) {
@@ -119,11 +120,12 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: start;
-  max-width: 800px;
+  width: 100%;
+  max-width: 700px;
 }
 
 #chartWrapper {
-  height: 300px;
+  height: 400px;
   width: 100%;
   position: relative;
 }
@@ -131,7 +133,7 @@ export default {
 #chartSVG {
   height: 100%;
   width: 100%;
-  overflow: hidden;
+  overflow: visible;
 }
 
 #chartTitle {
