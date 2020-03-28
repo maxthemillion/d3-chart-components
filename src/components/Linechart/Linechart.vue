@@ -37,7 +37,6 @@
 <script>
 import LinechartCore from "./linechart.js";
 import './style.scss'
-import * as moment from "moment";
 
 export default {
   name: "Linechart",
@@ -53,35 +52,13 @@ export default {
     },
     comment: { type: String, default: "comment" },
     commentTitle: { type: String, default: "comment title" },
-    dateFormat: {type: String, default: "YYYY-MM-DD"},
     xAxisTitle: { type: String, default: "xAxis" },
     yAxisTitle: { type: String, default: "yAxis" }
   },
   data: function() {
     return {};
   },
-  methods: {
-    convert: function(datum, type) {
-      if (type === "Q" || type === "N" || type === 'P') {
-        return datum;
-      } else if (type === "T") {
-        return moment(datum, this.dateFormat);
-      }
-    },
-    transformData: function(data) {
-      const _this = this
-      
-      // [ {color:A, x:v, y:v}, {color:A, x:v, y:v},  ...]
-      const vizData = data.map(function(d) {
-        return {
-          x: _this.convert(d[_this.binding.x], _this.binding.xType),
-          y: _this.convert(d[_this.binding.y], _this.binding.yType),
-          color: _this.convert(d[_this.binding.color], _this.binding.colorType)
-        };
-      });
-      return vizData;
-    }
-  }
+
 };
 </script>
 

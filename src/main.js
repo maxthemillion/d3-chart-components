@@ -2,6 +2,8 @@ import Vue from 'vue'
 import App from './App.vue'
 import * as moment from 'moment'
 import * as d3 from "d3"
+import {loadData} from "./js/utils.js"
+
 
 Vue.config.productionTip = false
 
@@ -90,6 +92,14 @@ let opts_dateX = {
   ]
 }
 
-new Vue({
-  render: h => h(App, {props:{ opts: opts_timeX}}),
-}).$mount('#app')
+
+let opts = opts_timeX
+loadData(opts).then(function(data){
+  opts.vizData = data 
+  new Vue({
+    render: h => h(App, {props:{ opts: opts}}),
+  }).$mount('#app')
+
+}
+)
+

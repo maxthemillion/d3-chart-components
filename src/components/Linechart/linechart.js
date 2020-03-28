@@ -4,6 +4,9 @@ import * as d3 from "d3";
 export default {
   name: "LinechartCore",
   props: {
+    vizData:{
+      type: Object
+    },
     xDomain: {
       type: Array,
       default: function() {
@@ -84,8 +87,6 @@ export default {
       axis: {},
       select: {},
       domain: { x: {}, y: {} },
-      rawData: {},
-      vizData: {},
       zoom: {},
       layout: {
         yaxis: {
@@ -396,10 +397,7 @@ export default {
 
   mounted() {
     const _this = this;
-    const _window = window;
-    d3.csv(this.dataURL, d3.autoType).then(function(data) {
-      // TODO: how can input parsing be handled for all x, y and color?
-      _this.vizData = _this.transformData(data);
+    const _window = window
       _this.setReferences();
       _this.setDomain();
       _this.setScales();
@@ -409,6 +407,5 @@ export default {
       _this.updateAxes();
       _this.setZoom();
       _window.addEventListener("resize", _this.handleResize);
-    });
   }
 };
