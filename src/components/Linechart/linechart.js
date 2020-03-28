@@ -5,7 +5,7 @@ export default {
   name: "LinechartCore",
   props: {
     vizData:{
-      type: Object
+      type: Array
     },
     xDomain: {
       type: Array,

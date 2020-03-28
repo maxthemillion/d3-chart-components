@@ -2,7 +2,7 @@ import Vue from 'vue'
 import App from './App.vue'
 import * as moment from 'moment'
 import * as d3 from "d3"
-import {loadData} from "./js/utils.js"
+import {loadData} from "./js/utils/dataLoad.js"
 
 
 Vue.config.productionTip = false
