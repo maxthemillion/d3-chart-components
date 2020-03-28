@@ -14,8 +14,7 @@
     "d3": "^5.15.0",
     "d3-array": "^2.4.0",
     "d3-dsv": "^1.2.0",
-    "moment": "^2.24.0",
-    "@bit/bit.envs.bundlers.webpack": "file:./components/bundlers/webpack"
+    "moment": "^2.24.0"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^4.2.3",
@@ -66,14 +65,8 @@
   ],
   "bit": {
     "env": {
-      "compiler": {
-      "bit.envs/compilers/test@0.0.1": {
-        "options": {
-          "file": "./compiler/components/bundlers/webpack"
-        }
-      }
-    }
-  },
+      "compiler": "bit.envs/compilers/typescript@3.1.40"
+    },
     "componentsDefaultDirectory": "components/{name}",
     "packageManager": "npm"
   }

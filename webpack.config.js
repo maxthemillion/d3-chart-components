@@ -26,7 +26,7 @@ var commonConfig = {
       },
       {
         test: /\.vue$/,
-        loader: 'vue-loadaer'
+        loader: 'vue-loader'
       },
       {
         test: /\.css$/i,

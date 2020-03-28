@@ -1,5 +1,0 @@
-{
-  "dependencies": {
-    "@bit/bit.envs.bundlers.webpack": "file:./components/bundlers/webpack"
-  }
-}

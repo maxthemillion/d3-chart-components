@@ -36,7 +36,7 @@
 
 <script>
 import LinechartCore from "./linechart.js";
-import '@/styles/style.scss'
+import './style.scss'
 import * as moment from "moment";
 
 export default {
@@ -86,6 +86,15 @@ export default {
 </script>
 
 <style>
+
+#pageWrapper {
+  font-family: 'Raleway';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  color: #2c3e50;
+}
+
 .axisTitle {
   font-size: small;
   font-weight: bold;
@@ -122,7 +131,7 @@ export default {
   align-items: center;
   justify-content: start;
   width: 100%;
-  max-width: 700px;
+  max-width: 600px;
 }
 
 #chartWrapper {
