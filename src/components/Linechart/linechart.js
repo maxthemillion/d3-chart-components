@@ -1,6 +1,5 @@
 import * as d3 from "d3";
-import Vue from "vue";
-import AnnotationMarker from "../AnnotationMarker.vue";
+//import AnnotationMarker from "../Annotation/AnnotationMarker.vue";
 
 export default {
   name: "LinechartCore",
@@ -319,7 +318,7 @@ export default {
         dot.attr("display", "none");
       }
     },
-    appendAnnotations: function() {
+    /*appendAnnotations: function() {
       if (this.annotations === null) {
         return;
       }
@@ -349,7 +348,7 @@ export default {
         instance.$mount();
         _this.select.plotArea.node().appendChild(instance.$el);
       });
-    },
+    },*/
     positionPlotElements: function() {
       const _this = this;
 
@@ -405,7 +404,7 @@ export default {
       _this.setDomain();
       _this.setScales();
       _this.appendPlotElements();
-      _this.appendAnnotations();
+      //_this.appendAnnotations();
       _this.positionPlotElements();
       _this.updateAxes();
       _this.setZoom();

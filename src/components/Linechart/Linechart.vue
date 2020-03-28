@@ -36,6 +36,7 @@
 
 <script>
 import LinechartCore from "./linechart.js";
+import '@/styles/style.scss'
 import * as moment from "moment";
 
 export default {
