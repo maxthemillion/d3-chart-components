@@ -4,6 +4,16 @@
     "maxthemillion.d3charts/linechart@0.1.3": {
         "files": [
             {
+                "relativePath": "src/components/Chart/Line/LineChart.vue",
+                "test": false,
+                "name": "LineChart.vue"
+            },
+            {
+                "relativePath": "src/components/Chart/Line/linechart-core.js",
+                "test": false,
+                "name": "linechart-core.js"
+            },
+            {
                 "name": "Linechart.vue",
                 "relativePath": "src/components/Linechart/Linechart.vue",
                 "test": false
@@ -20,7 +30,6 @@
             }
         ],
         "mainFile": "src/components/Linechart/linechart.js",
-        "trackDir": "src/components/Linechart",
         "origin": "AUTHORED",
         "exported": true
     },

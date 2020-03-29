@@ -35,12 +35,10 @@
 </template>
 
 <script>
-import LinechartCore from "./linechart.js";
 import './style.scss'
 
 export default {
-  name: "Linechart",
-  extends: LinechartCore,
+  name: "ChartWrapper",
   props: {
     chartTitle: {
       type: String,

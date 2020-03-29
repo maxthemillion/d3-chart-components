@@ -2,7 +2,7 @@ import * as d3 from "d3";
 //import AnnotationMarker from "../Annotation/AnnotationMarker.vue";
 
 export default {
-  name: "LinechartCore",
+  name: "LineChartCore",
   props: {
     vizData:{
       type: Array
