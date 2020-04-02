@@ -65,14 +65,23 @@
   ],
   "bit": {
     "env": {
-      "compiler": "bit.envs/compilers/typescript@3.1.40"
+      "compiler": "bit.envs/compilers/typescript@3.1.45"
     },
     "componentsDefaultDirectory": "components/{name}",
     "packageManager": "npm",
     "resolveModules": {
-      "modulesDirectories": ["src"],
+      "modulesDirectories": [
+        "src"
+      ],
       "aliases": {
         "@": "src"
+      }
+    },
+    "overrides": {
+      "src/styles/*": {
+        "env": {
+          "compiler": "-"
+        }
       }
     }
   }

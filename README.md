@@ -1,23 +1,23 @@
-# Reusable D3 Line Chart Component for Vue.js
+# d3 chart components
 
-This repository contains the code for a reusable line chart component written in D3.js and Vue.js. Instead of re-writing the chart from scratch each time you build an interactive chart, use this one as a starting point and customize it when you require even more interactivity.
+This repository contains chart components written in D3.js and Vue.js. Instead of re-writing the charts from scratch each time you build an interactive chart, use this one as a starting point and customize it when you require even more interactivity.
 
 It comes with:
 - data bindings to x-axis, y-axis and colors
 - zooming
 - panning
 - annotation markers
+- ...
 
-Instead of filling the chart with data on the president's approval ratings, you could just go ahead and put in time series data on electricity prices. Instead of re-reading the documentation on D3 each time that you want to add a title on a chart, you can easily pass title texts as opts to the chart component.
 
-## Installation
-Install from npm:
-> npm i @maxthemillion/vued3-linechart
+## Installation [needs an update]
+Install components using npm
+> npm install @bit
 
 Import to your main.js: 
 > import app from '@maxthemillion/vued3-linechart'
 
-## opts arguments
+## opts arguments [needs an update]
 The opts object of the Linechart component takes the following arguments:
 - dataURL: relative path to the data in csv format (eg. "./data/approval_allpolls.csv")
 - chartTitle: string (eg. "How unpopular is Donald Trump?")

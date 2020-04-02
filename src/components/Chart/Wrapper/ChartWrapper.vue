@@ -35,7 +35,6 @@
 </template>
 
 <script>
-import './style.scss'
 
 export default {
   name: "ChartWrapper",
@@ -59,15 +58,8 @@ export default {
 };
 </script>
 
-<style>
-
-#pageWrapper {
-  font-family: 'Raleway';
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
+<style lang='scss'>
+@import '~@bit/maxthemillion.d3charts.styles';
 
 .axisTitle {
   font-size: small;
@@ -94,6 +86,7 @@ export default {
 }
 
 #pageWrapper {
+  text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -121,24 +114,24 @@ export default {
 }
 
 #chartTitle {
-  font-size: 2em;
-  color: rgb(46, 46, 46);
+  font-size: $h2size;
   margin: 0.5em 0 0 0;
   text-align: left;
   width: 100%;
 }
 
 #chartSubTitle {
+  font-size: $h5size;
   text-align: left;
-  margin-bottom: 1em;
+  margin-bottom: 1rem;
   width: 100%;
 }
 
 #comment {
+  font-size: $psize*0.8;
   margin-top: 30px;
   width: 100%;
   text-align: left;
-  font-size: x-small;
 }
 
 #xAxisViewport {
